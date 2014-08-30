@@ -5,8 +5,9 @@ import requests
 import qiniu.center
 from qiniu.auth import Auth, RequestsAuth
 
+
 class Bucket(object):
-    """所有bucket 相关操作 """
+
     def __init__(self, bucket=None, auth=None):
         self.auth = auth
         self.bucket = bucket
@@ -56,7 +57,6 @@ class Bucket(object):
         return ret, err
 
     def stat(self, keys):
-        ""
         return self.conn.call(uri_stat(self.bucket, key))
 
     def delete(self, keys):

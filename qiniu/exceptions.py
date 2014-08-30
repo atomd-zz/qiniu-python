@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+
 class QiniuException(IOError):
     """common exception"""
     def __init__(self, arg):

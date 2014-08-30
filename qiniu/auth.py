@@ -7,6 +7,7 @@ from base64 import urlsafe_b64encode
 
 from requests.auth import AuthBase
 
+
 class Auth(object):
 
     def __init__(self, accessKey, secretKey):
