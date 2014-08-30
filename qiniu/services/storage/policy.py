@@ -79,37 +79,3 @@ class PutPolicy(object):
 
         b = json.dumps(token, separators=(',', ':'))
         return mac.sign_with_data(b)
-
-
-class GetPolicy(object):
-    expires = 3600
-
-    def __init__(self, expires=3600):
-        self.expires = expires
-
-    def make_request(self, base_url, mac=None):
-        '''
-         *  return private_url
-        '''
-        if mac is None:
-            mac = digest.Mac()
-
-        deadline = int(time.time()) + self.expires
-        if '?' in base_url:
-            base_url += '&'
-        else:
-            base_url += '?'
-        base_url = '%se=%s' % (base_url, str(deadline))
-
-        token = mac.sign(base_url)
-        return '%s&token=%s' % (base_url, token)
-
-
-def make_base_url(domain, key):
-    '''
-     * domain => str
-     * key => str
-     * return base_url
-    '''
-    key = rpc.encode_unicode(key)
-    return 'http://%s/%s' % (domain, urllib.quote(key))

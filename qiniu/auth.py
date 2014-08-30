@@ -4,7 +4,7 @@ from hashlib import sha1
 from base64 import urlsafe_b64encode
 
 class Auth(object):
-    def __init__(self, accessKey=None, secretKey=None):
+    def __init__(self, accessKey, secretKey):
         self.__checkKey(accessKey,secretKey)
         self.__accessKey, self.__secretKey = accessKey, secretKey
 
