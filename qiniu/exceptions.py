@@ -7,4 +7,3 @@ class QiniuException(IOError):
 
 class DeprecatedApi(QiniuException):
     """used deprecated api"""
-

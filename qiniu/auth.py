@@ -3,9 +3,11 @@ import hmac
 from hashlib import sha1
 from base64 import urlsafe_b64encode
 
+
 class Auth(object):
+
     def __init__(self, accessKey, secretKey):
-        self.__checkKey(accessKey,secretKey)
+        self.__checkKey(accessKey, secretKey)
         self.__accessKey, self.__secretKey = accessKey, secretKey
 
     def __token(self, data):
@@ -39,6 +41,4 @@ class Auth(object):
 
     def __checkKey(self, accessKey, secretKey):
         if accessKey is None or secretKey is None or (accessKey == '' or secretKey == ''):
-            raise ValueError, 'invalid key'
-
-
+            raise ValueError('invalid key')

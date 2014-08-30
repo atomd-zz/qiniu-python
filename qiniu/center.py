@@ -11,7 +11,7 @@ RS_HOST = "rs.qbox.me"
 RSF_HOST = "rsf.qbox.me"
 UP_HOST = "up.qiniu.com"
 UP_HOST2 = "upload.qiniu.com"
-DEFAULT_TIMEOUT= 30
+DEFAULT_TIMEOUT = 30
 
 _policyFields = [
     'callbackUrl',
@@ -38,7 +38,9 @@ _deprecatedPolicyFields = [
     'asyncOps'
 ]
 
+
 class Qiniu(object):
+
     def __init__(self, accessKey, secretKey):
         self.__auth = Auth(accessKey, secretKey)
 
@@ -63,10 +65,9 @@ class Qiniu(object):
         token = self.__auth.token(url)
         return '%s&token=%s' % (url, token)
 
-
     def uploadToken(self, bucket, key=None, policy=None, expires=3600):
         if bucket is None or bucket == '':
-            raise ValueError, 'invalid bucket'
+            raise ValueError('invalid bucket name')
 
         scope = bucket
         if key is not None:
@@ -86,11 +87,9 @@ class Qiniu(object):
     def __copyPolicy(self, policy, to):
         for v in _deprecatedPolicyFields:
             if v in policy:
-                raise DeprecatedApi, v + 'is deprecated'
+                raise DeprecatedApi(v + 'is deprecated')
 
         for v in _policyFields:
             x = policy[v]
             if x is not None:
                 to[v] = x
-
-

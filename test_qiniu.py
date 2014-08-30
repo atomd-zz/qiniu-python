@@ -15,6 +15,7 @@ dummyAccessKey = 'abcdefghklmnopq'
 dummySecretKey = '1234567890'
 dummyMac = Auth(dummyAccessKey, dummySecretKey)
 
+
 class AuthTestCase(unittest.TestCase):
 
     def test_token(self):
@@ -39,7 +40,9 @@ class AuthTestCase(unittest.TestCase):
 
 
 class centerTestCase(unittest.TestCase):
+
     q = Qiniu(dummyAccessKey, dummySecretKey)
+
     def test_deprecatedPolicy(self):
         with pytest.raises(DeprecatedApi):
             self.q.uploadToken('1', None, {'asyncOps': 1})

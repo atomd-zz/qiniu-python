@@ -2,7 +2,9 @@
 
 EOF = 'EOF'
 
+
 class Bucket(object):
+
     def __init__(self, bucket=None, auth=None):
         self.auth = auth
         self.bucket = bucket
@@ -64,7 +66,12 @@ class Bucket(object):
     def fetch(self, key, url):
         pass
 
+    def prefetch(self, url):
+        pass
+
+
 class File(object):
+
     bucket = None
     key = None
 
@@ -74,6 +81,7 @@ class File(object):
 
 
 class FilePair:
+
     src = None
     dest = None
 
