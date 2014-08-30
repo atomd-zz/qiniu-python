@@ -16,9 +16,11 @@ class Auth(object):
         self.__accessKey, self.__secretKey = accessKey, secretKey
 
     def __token(self, data):
+        key = self.__secretKey
         if not is_py2:
-            data = bytearray(data, 'utf-8')
-        hashed = hmac.new(self.__secretKey, data, sha1)
+            data = data.encode()
+            key = self.__secretKey.encode()
+        hashed = hmac.new(key, data, sha1)
         return urlsafe_b64encode(hashed.digest())
 
     def token(self, data):
@@ -26,7 +28,7 @@ class Auth(object):
 
     def tokenWithData(self, data):
         if not is_py2:
-            data = bytearray(data, 'utf-8')
+            data = data.encode()
         data = urlsafe_b64encode(data)
         return '%s:%s:%s' % (self.__accessKey, self.__token(data), data)
 
