@@ -56,6 +56,7 @@ class Bucket(object):
         return ret, err
 
     def stat(self, keys):
+        ""
         return self.conn.call(uri_stat(self.bucket, key))
 
     def delete(self, keys):
