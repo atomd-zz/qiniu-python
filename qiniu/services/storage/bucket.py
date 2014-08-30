@@ -52,7 +52,7 @@ class Bucket(object):
         ret = r.json()
         err = None
         if ret and not ret.get('marker'):
-            err = EOF
+            err = qiniu.center.EOF
 
         return ret, err
 
