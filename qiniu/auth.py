@@ -18,7 +18,8 @@ class Auth(object):
     def __token(self, data):
         key = self.__secretKey
         if not is_py2:
-            data = bytes(data, 'utf-8')
+            if not isinstance(py, bytes):
+                data = bytes(data, 'utf-8')
             key = bytes(self.__secretKey, 'utf-8')
         hashed = hmac.new(key, data, sha1)
         return urlsafe_b64encode(hashed.digest())
