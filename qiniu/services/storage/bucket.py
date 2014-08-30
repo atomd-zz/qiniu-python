@@ -6,7 +6,7 @@ import qiniu.center
 from qiniu.auth import Auth, RequestsAuth
 
 class Bucket(object):
-
+    """所有bucket 相关操作 """
     def __init__(self, bucket=None, auth=None):
         self.auth = auth
         self.bucket = bucket
@@ -24,7 +24,7 @@ class Bucket(object):
         pass
 
     def listByPrefix(self, prefix=None, marker=None, limit=None):
-        '''前缀查询:
+        """前缀查询:
          * bucket => str
          * prefix => str
          * marker => str
@@ -34,7 +34,7 @@ class Bucket(object):
         1. 首次请求 marker = None
         2. 无论 err 值如何，均应该先看 ret.get('items') 是否有内容
         3. 如果后续没有更多数据，err 返回 EOF，markerOut 返回 None（但不通过该特征来判断是否结束）
-        '''
+        """
         options = {
             'bucket': self.bucket,
         }
