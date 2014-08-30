@@ -4,7 +4,6 @@ import unittest
 import pytest
 
 from qiniu.auth import Auth
-import qiniu.utils
 from qiniu.exceptions import DeprecatedApi
 from qiniu.center import Qiniu
 

@@ -2,7 +2,6 @@ import time
 import json
 
 from qiniu.auth import Auth
-import qiniu.utils
 from qiniu.exceptions import DeprecatedApi
 
 from qiniu.services.storage.bucket import Bucket
