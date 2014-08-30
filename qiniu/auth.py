@@ -8,6 +8,7 @@ from requests.auth import AuthBase
 from requests.compat import urlparse
 from requests.compat import is_py2
 
+
 class Auth(object):
 
     def __init__(self, accessKey, secretKey):
