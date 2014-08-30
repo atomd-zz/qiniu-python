@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
-from urlparse import urlparse
 import hmac
 from hashlib import sha1
 from base64 import urlsafe_b64encode
 
 from requests.auth import AuthBase
+from requests.compat import urlparse
 
 
 class Auth(object):
