@@ -6,7 +6,7 @@ from base64 import urlsafe_b64encode
 
 from requests.auth import AuthBase
 from requests.compat import urlparse
-
+from requests.compat import is_py2
 
 class Auth(object):
 
@@ -15,7 +15,8 @@ class Auth(object):
         self.__accessKey, self.__secretKey = accessKey, secretKey
 
     def __token(self, data):
-        data = bytearray(data, 'utf8')
+        if not is_py2:
+            data = bytearray(data, 'utf-8')
         hashed = hmac.new(self.__secretKey, data, sha1)
         return urlsafe_b64encode(hashed.digest())
 
@@ -23,7 +24,8 @@ class Auth(object):
         return '%s:%s' % (self.__accessKey, self.__token(data))
 
     def tokenWithData(self, data):
-        data = bytearray(data, 'utf8')
+        if not is_py2:
+            data = bytearray(data, 'utf-8')
         data = urlsafe_b64encode(data)
         return '%s:%s:%s' % (self.__accessKey, self.__token(data), data)
 
@@ -56,7 +58,5 @@ class RequestsAuth(AuthBase):
 
     def __call__(self, r):
         token = self.auth.tokenOfRequest(r.url)
-        print(r.url)
-        print(token)
         r.headers['Authorization'] = 'QBox %s' % token
         return r
