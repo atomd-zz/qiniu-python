@@ -19,5 +19,4 @@ before_script:
   - export QINIU_TEST_ENV="travis"
   - export PYTHONPATH="$PYTHONPATH:."
 script:
-  - python setup.py
   - py.test
