@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from urlparse import urlparse
 import hmac
 from hashlib import sha1
