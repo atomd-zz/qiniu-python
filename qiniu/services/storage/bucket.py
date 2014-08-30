@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
-EOF = 'EOF'
+import requests
 
+import qiniu.center
+from qiniu.auth import Auth, RequestsAuth
 
 class Bucket(object):
 
@@ -33,19 +35,21 @@ class Bucket(object):
         2. 无论 err 值如何，均应该先看 ret.get('items') 是否有内容
         3. 如果后续没有更多数据，err 返回 EOF，markerOut 返回 None（但不通过该特征来判断是否结束）
         '''
-        ops = {
+        options = {
             'bucket': self.bucket,
         }
         if marker is not None:
-            ops['marker'] = marker
+            options['marker'] = marker
         if limit is not None:
-            ops['limit'] = limit
+            options['limit'] = limit
         if prefix is not None:
-            ops['prefix'] = prefix
+            options['prefix'] = prefix
 
-        url = '%s?%s' % ('/list', urllib.urlencode(ops))
-        ret, err, code = self.conn.call_with(
-            url, body=None, contentType='application/x-www-form-urlencoded')
+        url = 'http://%s/list' % qiniu.center.RSF_HOST
+
+        r = requests.get(url, params=options, auth=RequestsAuth(self.auth))
+        ret = r.json()
+        err = None
         if ret and not ret.get('marker'):
             err = EOF
 

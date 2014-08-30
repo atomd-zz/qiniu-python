@@ -5,6 +5,7 @@ import hmac
 from hashlib import sha1
 from base64 import urlsafe_b64encode
 
+from requests.auth import AuthBase
 
 class Auth(object):
 
@@ -23,7 +24,7 @@ class Auth(object):
         data = urlsafe_b64encode(data)
         return '%s:%s:%s' % (self.__accessKey, self.__token(data), data)
 
-    def tokenOfRequest(self, url, body, content_type):
+    def tokenOfRequest(self, url, body=None, content_type=None):
         parsedUrl = urlparse(url)
         query = parsedUrl.query
         path = parsedUrl.path
@@ -44,3 +45,15 @@ class Auth(object):
     def __checkKey(self, accessKey, secretKey):
         if accessKey is None or secretKey is None or (accessKey == '' or secretKey == ''):
             raise ValueError('invalid key')
+
+
+class RequestsAuth(AuthBase):
+    def __init__(self, auth):
+        self.auth = auth
+
+    def __call__(self, r):
+        token = self.auth.tokenOfRequest(r.url)
+        print(r.url)
+        print(token)
+        r.headers['Authorization'] = 'QBox %s' % token
+        return r
