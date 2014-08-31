@@ -12,18 +12,6 @@ class Bucket(object):
         self.auth = auth
         self.bucket = bucket
 
-    def put(self):
-        pass
-
-    def putFile(self):
-        pass
-
-    def resumablePut(self):
-        pass
-
-    def resumablePutFile(self):
-        pass
-
     def listByPrefix(self, prefix=None, marker=None, limit=None):
         """前缀查询:
          * bucket => str
@@ -57,16 +45,16 @@ class Bucket(object):
         return ret, err
 
     def stat(self, keys):
-        return self.conn.call(uri_stat(self.bucket, key))
+        pass
 
     def delete(self, keys):
-        return self.conn.call(uri_delete(self.bucket, key))
+        pass
 
     def move(self, keyPairs, targetBucket=None):
-        return self.conn.call(uri_move(self.bucket, key_src, bucketDest, key_dest))
+        pass
 
     def copy(self, keyPairs, targetBucket=None):
-        return self.conn.call(uri_copy(self.bucket, key_src, bucketDest, key_dest))
+        pass
 
     def fetch(self, key, url):
         pass

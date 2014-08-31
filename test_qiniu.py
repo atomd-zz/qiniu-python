@@ -1,12 +1,26 @@
+# -*- coding: utf-8 -*-
 import os
+
+import string
+import random
+
+try:
+    import zlib
+    binascii = zlib
+except ImportError:
+    zlib = None
+    import binascii
 
 import unittest
 import pytest
 
-from qiniu.auth import Auth
-from qiniu.exceptions import DeprecatedApi
-from qiniu import Bucket
+from qiniu import Bucket, DeprecatedApi, Auth, put, putFile
+
 import qiniu.consts
+
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
 
 accessKey = os.getenv("QINIU_ACCESS_KEY")
 secretKey = os.getenv("QINIU_SECRET_KEY")
@@ -53,12 +67,55 @@ class BucketTestCase(unittest.TestCase):
         self.assertEqual(err is qiniu.consts.EOF or err is None, True)
         assert len(ret.get('items')) == 4
 
+def r(length):
+    lib = string.ascii_uppercase
+    return ''.join([random.choice(lib) for i in range(0, length)])
+
 
 class UploaderTestCase(unittest.TestCase):
-    def __init__(self, arg):
-        super(UploaderTestCase, self).__init__()
-        self.arg = arg
 
+    mime_type = "text/plain"
+    params = {'x:a': 'a'}
+    q = Auth(accessKey, secretKey)
+
+    def test_put(self):
+        key = 'a\\b\\c"你好' + r(9)
+        data = "hello bubby!"
+        checkCrc = 2
+        crc32 = binascii.crc32(data) & 0xFFFFFFFF
+        token = self.q.uploadToken(bucketName)
+        ret, err = put(token, key, data, checkCrc = 2, crc32=crc32)
+        assert err is None
+        assert ret['key'] == key
+
+
+    def test_putFile(self):
+        localfile = '%s' % __file__
+        key = "test_%s" % r(9)
+
+        token = self.q.uploadToken(bucketName)
+        ret, err = putFile(token, key, localfile, checkCrc = 1)
+        assert err is None
+        assert ret['key'] == key
+
+    # def test_put_crc_fail(self):
+    #     key = "test_%s" % r(9)
+    #     data = "hello bubby!"
+    #     extra.check_crc = 2
+    #     extra.crc32 = "wrong crc32"
+    #     ret, err = io.put(policy.token(), key, data, extra)
+    #     assert err is not None
+
+    # def test_put_fail_reqid(self):
+    #     key = "test_%s" % r(9)
+    #     data = "hello bubby!"
+    #     ret, err = io.put("", key, data, extra)
+    #     assert "reqid" in err
+
+class ResumableUploaderTestCase(unittest.TestCase):
+    def __init__(self, arg):
+        super(ResumableUploaderTestCase, self).__init__()
+        self.arg = arg
 
 if __name__ == '__main__':
     unittest.main()
