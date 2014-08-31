@@ -11,7 +11,7 @@ from requests.compat import is_py2
 
 from .exceptions import DeprecatedApi
 
-_policyFields = {
+_policyFields = set([
     'callbackUrl',
     'callbackBody',
     'callbackHost',
@@ -30,11 +30,11 @@ _policyFields = {
     'persistentOps',
     'persistentNotifyUrl',
     'persistentPipeline',
-}
+])
 
-_deprecatedPolicyFields = {
+_deprecatedPolicyFields = set([
     'asyncOps'
-}
+])
 
 
 def _urlsafe_b64encode(data):
