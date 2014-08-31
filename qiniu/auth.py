@@ -37,6 +37,17 @@ _deprecatedPolicyFields = {
 }
 
 
+def _urlsafe_b64encode(data):
+    if not is_py2:
+        if isinstance(data, str):
+            data = bytes(data, 'utf-8')
+    ret = urlsafe_b64encode(data)
+    if not is_py2:
+        if isinstance(data, bytes):
+            ret = ret.decode('utf-8')
+    return ret
+
+
 class Auth(object):
 
     def __init__(self, accessKey, secretKey):
@@ -50,16 +61,13 @@ class Auth(object):
                 data = bytes(data, 'utf-8')
             key = bytes(self.__secretKey, 'utf-8')
         hashed = hmac.new(key, data, sha1)
-        return str(urlsafe_b64encode(hashed.digest()))
+        return _urlsafe_b64encode(hashed.digest())
 
     def token(self, data):
         return '%s:%s' % (self.__accessKey, self.__token(data))
 
     def tokenWithData(self, data):
-        if not is_py2:
-            if isinstance(data, str):
-                data = bytes(data, 'utf-8')
-        data = urlsafe_b64encode(data)
+        data = _urlsafe_b64encode(data)
         return '%s:%s:%s' % (self.__accessKey, self.__token(data), data)
 
     def tokenOfRequest(self, url, body=None, content_type=None):
