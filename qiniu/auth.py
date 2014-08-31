@@ -57,7 +57,7 @@ class Auth(object):
 
     def tokenWithData(self, data):
         if not is_py2:
-           if isinstance(data, str):
+            if isinstance(data, str):
                 data = bytes(data, 'utf-8')
         data = urlsafe_b64encode(data)
         return '%s:%s:%s' % (self.__accessKey, self.__token(data), data)
