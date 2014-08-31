@@ -8,3 +8,10 @@ For detailed document, please see:
 '''
 
 __version__ = '7.0.0'
+
+from .auth import Auth
+
+from .exceptions import DeprecatedApi
+
+from .services.storage.bucket import Bucket
+from .services.storage.uploader import Uploader

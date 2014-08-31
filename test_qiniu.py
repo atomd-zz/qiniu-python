@@ -5,8 +5,8 @@ import pytest
 
 from qiniu.auth import Auth
 from qiniu.exceptions import DeprecatedApi
-from qiniu.center import Qiniu
-import qiniu.center
+from qiniu import Bucket
+import qiniu.consts
 
 accessKey = os.getenv("QINIU_ACCESS_KEY")
 secretKey = os.getenv("QINIU_SECRET_KEY")
@@ -42,7 +42,7 @@ class AuthTestCase(unittest.TestCase):
 
 class centerTestCase(unittest.TestCase):
 
-    q = Qiniu(dummyAccessKey, dummySecretKey)
+    q = Auth(dummyAccessKey, dummySecretKey)
 
     def test_deprecatedPolicy(self):
         with pytest.raises(DeprecatedApi):
@@ -50,12 +50,12 @@ class centerTestCase(unittest.TestCase):
 
 
 class StorageTestCase(unittest.TestCase):
-    q = Qiniu(accessKey, secretKey)
-    bucket = q.bucket(bucketName)
+    q = Auth(accessKey, secretKey)
+    bucket = Bucket(bucketName, q)
 
     def test_listPrefix(self):
         ret, err = self.bucket.listByPrefix(limit=4)
-        self.assertEqual(err is qiniu.center.EOF or err is None, True)
+        self.assertEqual(err is qiniu.consts.EOF or err is None, True)
         assert len(ret.get('items')) == 4
 
 

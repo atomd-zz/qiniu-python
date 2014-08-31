@@ -1,12 +1,40 @@
 # -*- coding: utf-8 -*-
 
 import hmac
+import time
 from hashlib import sha1
 from base64 import urlsafe_b64encode
 
 from requests.auth import AuthBase
 from requests.compat import urlparse
 from requests.compat import is_py2
+
+from .exceptions import DeprecatedApi
+
+_policyFields = [
+    'callbackUrl',
+    'callbackBody',
+    'callbackHost',
+
+    'returnUrl',
+    'returnBody',
+
+    'endUser',
+    'saveKey',
+    'insertOnly',
+
+    'detectMime',
+    'mimeLimit',
+    'fsizeLimit',
+
+    'persistentOps',
+    'persistentNotifyUrl',
+    'persistentPipeline',
+]
+
+_deprecatedPolicyFields = [
+    'asyncOps'
+]
 
 
 class Auth(object):
@@ -18,11 +46,11 @@ class Auth(object):
     def __token(self, data):
         key = self.__secretKey
         if not is_py2:
-            if not isinstance(data, bytes):
+            if isinstance(data, str):
                 data = bytes(data, 'utf-8')
             key = bytes(self.__secretKey, 'utf-8')
         hashed = hmac.new(key, data, sha1)
-        return urlsafe_b64encode(hashed.digest())
+        return str(urlsafe_b64encode(hashed.digest()))
 
     def token(self, data):
         return '%s:%s' % (self.__accessKey, self.__token(data))
@@ -31,7 +59,7 @@ class Auth(object):
         if not is_py2:
             data = bytes(data, 'utf-8')
         data = urlsafe_b64encode(data)
-        return '%s:%s:%s' % (self.__accessKey, self.__token(data), data)
+        return '%s:%s:%s' % (self.__accessKey, str(self.__token(data)), data)
 
     def tokenOfRequest(self, url, body=None, content_type=None):
         parsedUrl = urlparse(url)
@@ -52,8 +80,52 @@ class Auth(object):
         return '%s:%s' % (self.__accessKey, self.__token(data))
 
     def __checkKey(self, accessKey, secretKey):
-        if accessKey is None or secretKey is None or (accessKey == '' or secretKey == ''):
+        if not (accessKey and secretKey):
             raise ValueError('invalid key')
+
+    def privateDownloadUrl(self, url, expires=3600):
+        '''
+         *  return private url
+        '''
+
+        deadline = int(time.time()) + expires
+        if '?' in url:
+            url += '&'
+        else:
+            url += '?'
+        url = '%se=%s' % (url, str(deadline))
+
+        token = self.token(url)
+        return '%s&token=%s' % (url, token)
+
+    def uploadToken(self, bucket, key=None, policy=None, expires=3600):
+        if bucket is None or bucket == '':
+            raise ValueError('invalid bucket name')
+
+        scope = bucket
+        if key is not None:
+            scope = bucket + ':'
+
+        args = dict(
+            scope=scope,
+            deadline=int(time.time()) + expires,
+        )
+
+        if policy is not None:
+            self.__copyPolicy(policy, args)
+
+        data = json.dumps(args, separators=(',', ':'))
+        return self.tokenWithData(data)
+
+    def __copyPolicy(self, policy, to):
+        for v in _deprecatedPolicyFields:
+            if v in policy:
+                raise DeprecatedApi(v + 'is deprecated')
+
+        for v in _policyFields:
+            x = policy[v]
+            if x is not None:
+                to[v] = x
 
 
 class RequestsAuth(AuthBase):

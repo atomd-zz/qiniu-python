@@ -2,8 +2,8 @@
 
 import requests
 
-import qiniu.center
-from qiniu.auth import Auth, RequestsAuth
+import qiniu.consts
+from qiniu.auth import RequestsAuth
 
 
 class Bucket(object):
@@ -46,13 +46,13 @@ class Bucket(object):
         if prefix is not None:
             options['prefix'] = prefix
 
-        url = 'http://%s/list' % qiniu.center.RSF_HOST
+        url = 'http://%s/list' % qiniu.consts.RSF_HOST
 
         r = requests.get(url, params=options, auth=RequestsAuth(self.auth))
         ret = r.json()
         err = None
         if ret and not ret.get('marker'):
-            err = qiniu.center.EOF
+            err = qiniu.consts.EOF
 
         return ret, err
 
@@ -73,26 +73,6 @@ class Bucket(object):
 
     def prefetch(self, url):
         pass
-
-
-class File(object):
-
-    bucket = None
-    key = None
-
-    def __init__(self, bucket, key):
-        self.bucket = bucket
-        self.key = key
-
-
-class FilePair:
-
-    src = None
-    dest = None
-
-    def __init__(self, src, dest):
-        self.src = src
-        self.dest = dest
 
 
 def __uri_stat(bucket, key):
