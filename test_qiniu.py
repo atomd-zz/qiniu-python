@@ -67,6 +67,7 @@ class BucketTestCase(unittest.TestCase):
         self.assertEqual(err is qiniu.consts.EOF or err is None, True)
         assert len(ret.get('items')) == 4
 
+
 def r(length):
     lib = string.ascii_uppercase
     return ''.join([random.choice(lib) for i in range(0, length)])
@@ -84,17 +85,16 @@ class UploaderTestCase(unittest.TestCase):
         checkCrc = 2
         crc32 = binascii.crc32(data) & 0xFFFFFFFF
         token = self.q.uploadToken(bucketName)
-        ret, err = put(token, key, data, checkCrc = 2, crc32=crc32)
+        ret, err = put(token, key, data, checkCrc=2, crc32=crc32)
         assert err is None
         assert ret['key'] == key
-
 
     def test_putFile(self):
         localfile = '%s' % __file__
         key = "test_%s" % r(9)
 
         token = self.q.uploadToken(bucketName)
-        ret, err = putFile(token, key, localfile, checkCrc = 1)
+        ret, err = putFile(token, key, localfile, checkCrc=1)
         assert err is None
         assert ret['key'] == key
 
@@ -104,7 +104,7 @@ class UploaderTestCase(unittest.TestCase):
         checkCrc = 2
         crc32 = 'wrong crc32'
         token = self.q.uploadToken(bucketName)
-        ret, err = put(token, key, data, checkCrc = 2, crc32=crc32)
+        ret, err = put(token, key, data, checkCrc=2, crc32=crc32)
         # assert err is not None
 
 

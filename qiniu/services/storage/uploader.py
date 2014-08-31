@@ -13,6 +13,7 @@ import requests
 import qiniu.consts
 from qiniu.auth import RequestsAuth
 
+
 def put(uptoken, key, data, params={}, mime_type='application/octet-stream', checkCrc=0,  crc32=''):
     """ put your data to Qiniu
 
@@ -43,7 +44,7 @@ def put(uptoken, key, data, params={}, mime_type='application/octet-stream', che
     # fields['file'] = (key, data, mime_type)
     url = 'http://' + qiniu.consts.UP_HOST + '/'
 
-    r = requests.post(url, data=fields, files={'file':(key, data, mime_type)})
+    r = requests.post(url, data=fields, files={'file': (key, data, mime_type)})
     ret = r.json()
     err = None
     return ret, err

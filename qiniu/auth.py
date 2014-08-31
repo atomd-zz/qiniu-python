@@ -4,13 +4,14 @@ import hmac
 import time
 import json
 from hashlib import sha1
-from base64 import urlsafe_b64encode
 
 from requests.auth import AuthBase
 from requests.compat import urlparse
 from requests.compat import is_py2
 
 from .exceptions import DeprecatedApi
+
+from .utils import base64Encode
 
 _policyFields = set([
     'callbackUrl',
@@ -38,17 +39,6 @@ _deprecatedPolicyFields = set([
 ])
 
 
-def _urlsafe_b64encode(data):
-    if not is_py2:
-        if isinstance(data, str):
-            data = bytes(data, 'utf-8')
-    ret = urlsafe_b64encode(data)
-    if not is_py2:
-        if isinstance(data, bytes):
-            ret = ret.decode('utf-8')
-    return ret
-
-
 class Auth(object):
 
     def __init__(self, accessKey, secretKey):
@@ -62,13 +52,13 @@ class Auth(object):
                 data = bytes(data, 'utf-8')
             key = bytes(self.__secretKey, 'utf-8')
         hashed = hmac.new(key, data, sha1)
-        return _urlsafe_b64encode(hashed.digest())
+        return base64Encode(hashed.digest())
 
     def token(self, data):
         return '%s:%s' % (self.__accessKey, self.__token(data))
 
     def tokenWithData(self, data):
-        data = _urlsafe_b64encode(data)
+        data = base64Encode(data)
         return '%s:%s:%s' % (self.__accessKey, self.__token(data), data)
 
     def tokenOfRequest(self, url, body=None, content_type=None):

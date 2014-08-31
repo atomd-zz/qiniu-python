@@ -5,6 +5,8 @@ import requests
 import qiniu.consts
 from qiniu.auth import RequestsAuth
 
+from qiniu.utils import base64Encode
+
 
 class Bucket(object):
 
@@ -64,20 +66,20 @@ class Bucket(object):
 
 
 def __uri_stat(bucket, key):
-    return "/stat/%s" % urlsafe_b64encode("%s:%s" % (bucket, key))
+    return "/stat/%s" % base64Encode("%s:%s" % (bucket, key))
 
 
 def __uri_delete(bucket, key):
-    return "/delete/%s" % urlsafe_b64encode("%s:%s" % (bucket, key))
+    return "/delete/%s" % base64Encode("%s:%s" % (bucket, key))
 
 
 def __uri_move(bucket_src, key_src, bucketDest, key_dest):
-    src = urlsafe_b64encode("%s:%s" % (bucket_src, key_src))
-    dest = urlsafe_b64encode("%s:%s" % (bucketDest, key_dest))
+    src = base64Encode("%s:%s" % (bucket_src, key_src))
+    dest = base64Encode("%s:%s" % (bucketDest, key_dest))
     return "/move/%s/%s" % (src, dest)
 
 
 def __uri_copy(bucket_src, key_src, bucketDest, key_dest):
-    src = urlsafe_b64encode("%s:%s" % (bucket_src, key_src))
-    dest = urlsafe_b64encode("%s:%s" % (bucketDest, key_dest))
+    src = base64Encode("%s:%s" % (bucket_src, key_src))
+    dest = base64Encode("%s:%s" % (bucketDest, key_dest))
     return "/copy/%s/%s" % (src, dest)
