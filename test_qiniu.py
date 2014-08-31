@@ -39,17 +39,12 @@ class AuthTestCase(unittest.TestCase):
         token = dummyMac.tokenOfRequest('http://www.qiniu.com?go=1', 'test', 'application/x-www-form-urlencoded')
         assert token == 'abcdefghklmnopq:svWRNcacOE-YMsc70nuIYdaa1e4='
 
-
-class centerTestCase(unittest.TestCase):
-
-    q = Auth(dummyAccessKey, dummySecretKey)
-
     def test_deprecatedPolicy(self):
         with pytest.raises(DeprecatedApi):
-            self.q.uploadToken('1', None, {'asyncOps': 1})
+            dummyMac.uploadToken('1', None, {'asyncOps': 1})
 
 
-class StorageTestCase(unittest.TestCase):
+class BucketTestCase(unittest.TestCase):
     q = Auth(accessKey, secretKey)
     bucket = Bucket(bucketName, q)
 
@@ -57,6 +52,12 @@ class StorageTestCase(unittest.TestCase):
         ret, err = self.bucket.listByPrefix(limit=4)
         self.assertEqual(err is qiniu.consts.EOF or err is None, True)
         assert len(ret.get('items')) == 4
+
+
+class UploaderTestCase(unittest.TestCase):
+    def __init__(self, arg):
+        super(UploaderTestCase, self).__init__()
+        self.arg = arg
 
 
 if __name__ == '__main__':

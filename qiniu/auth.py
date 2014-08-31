@@ -57,9 +57,10 @@ class Auth(object):
 
     def tokenWithData(self, data):
         if not is_py2:
-            data = bytes(data, 'utf-8')
+           if isinstance(data, str):
+                data = bytes(data, 'utf-8')
         data = urlsafe_b64encode(data)
-        return '%s:%s:%s' % (self.__accessKey, str(self.__token(data)), data)
+        return '%s:%s:%s' % (self.__accessKey, self.__token(data), data)
 
     def tokenOfRequest(self, url, body=None, content_type=None):
         parsedUrl = urlparse(url)
@@ -120,7 +121,7 @@ class Auth(object):
     def __copyPolicy(self, policy, to):
         for k, v in policy.items():
             if k in _deprecatedPolicyFields:
-                raise DeprecatedApi(v + 'is deprecated')
+                raise DeprecatedApi(k + ' is deprecated')
             if k in _policyFields:
                 to[k] = v
 
