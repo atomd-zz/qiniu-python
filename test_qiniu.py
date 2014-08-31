@@ -80,7 +80,7 @@ class UploaderTestCase(unittest.TestCase):
 
     def test_put(self):
         key = 'a\\b\\c"你好' + r(9)
-        data = "hello bubby!"
+        data = 'hello bubby!'
         checkCrc = 2
         crc32 = binascii.crc32(data) & 0xFFFFFFFF
         token = self.q.uploadToken(bucketName)
@@ -98,19 +98,15 @@ class UploaderTestCase(unittest.TestCase):
         assert err is None
         assert ret['key'] == key
 
-    # def test_put_crc_fail(self):
-    #     key = "test_%s" % r(9)
-    #     data = "hello bubby!"
-    #     extra.check_crc = 2
-    #     extra.crc32 = "wrong crc32"
-    #     ret, err = io.put(policy.token(), key, data, extra)
-    #     assert err is not None
+    def test_putInvalidCrc(self):
+        key = 'test_%s' % r(9)
+        data = 'hello bubby!'
+        checkCrc = 2
+        crc32 = 'wrong crc32'
+        token = self.q.uploadToken(bucketName)
+        ret, err = put(token, key, data, checkCrc = 2, crc32=crc32)
+        # assert err is not None
 
-    # def test_put_fail_reqid(self):
-    #     key = "test_%s" % r(9)
-    #     data = "hello bubby!"
-    #     ret, err = io.put("", key, data, extra)
-    #     assert "reqid" in err
 
 class ResumableUploaderTestCase(unittest.TestCase):
     def __init__(self, arg):
