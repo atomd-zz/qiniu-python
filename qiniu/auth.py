@@ -11,7 +11,7 @@ from requests.compat import is_py2
 
 from .exceptions import DeprecatedApi
 
-_policyFields = [
+_policyFields = {
     'callbackUrl',
     'callbackBody',
     'callbackHost',
@@ -30,11 +30,11 @@ _policyFields = [
     'persistentOps',
     'persistentNotifyUrl',
     'persistentPipeline',
-]
+}
 
-_deprecatedPolicyFields = [
+_deprecatedPolicyFields = {
     'asyncOps'
-]
+}
 
 
 class Auth(object):
@@ -118,14 +118,11 @@ class Auth(object):
         return self.tokenWithData(data)
 
     def __copyPolicy(self, policy, to):
-        for v in _deprecatedPolicyFields:
-            if v in policy:
+        for k, v in policy.items():
+            if k in _deprecatedPolicyFields:
                 raise DeprecatedApi(v + 'is deprecated')
-
-        for v in _policyFields:
-            x = policy[v]
-            if x is not None:
-                to[v] = x
+            if k in _policyFields:
+                to[k] = v
 
 
 class RequestsAuth(AuthBase):
