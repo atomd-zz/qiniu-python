@@ -23,9 +23,9 @@ if is_py2:
     reload(sys)
     sys.setdefaultencoding('utf-8')
 
-accessKey = os.getenv("QINIU_ACCESS_KEY")
-secretKey = os.getenv("QINIU_SECRET_KEY")
-bucketName = os.getenv("QINIU_TEST_BUCKET")
+accessKey = os.getenv('QINIU_ACCESS_KEY')
+secretKey = os.getenv('QINIU_SECRET_KEY')
+bucketName = os.getenv('QINIU_TEST_BUCKET')
 
 dummyAccessKey = 'abcdefghklmnopq'
 dummySecretKey = '1234567890'
@@ -92,10 +92,17 @@ class BucketTestCase(unittest.TestCase):
         ret = self.bucket.delete(['del'])
         assert 612 == ret[0]['code'] and ret[0]['data']['error'] == 'no such file or directory'
 
+    def test_move(self):
+        ret = self.bucket.move({'movefrom': 'moveto'})
+        assert ret[0]['code'] == 200
+        ret = self.bucket.move({'moveto': 'movefrom'})
+        assert ret[0]['code'] == 200
 
-def randomString(length):
-    lib = string.ascii_uppercase
-    return ''.join([random.choice(lib) for i in range(0, length)])
+    def test_copy(self):
+        ret = self.bucket.copy({'copyfrom': 'copyto'})
+        assert ret[0]['code'] == 200
+        ret = self.bucket.delete('copyto')
+        assert ret == {}
 
 
 class UploaderTestCase(unittest.TestCase):
@@ -105,7 +112,7 @@ class UploaderTestCase(unittest.TestCase):
     q = Auth(accessKey, secretKey)
 
     def test_put(self):
-        key = 'a\\b\\c"你好' + randomString(9)
+        key = 'a\\b\\c"你好'
         data = 'hello bubby!'
         crc32 = utils.crc32(data)
         token = self.q.uploadToken(bucketName)
@@ -114,17 +121,17 @@ class UploaderTestCase(unittest.TestCase):
         assert ret['key'] == key
 
     def test_putFile(self):
-        localfile = '%s' % __file__
-        key = "test_%s" % randomString(9)
+        localfile = __file__
+        key = 'test_file'
 
-        token = self.q.uploadToken(bucketName)
+        token = self.q.uploadToken(bucketName, key)
         crc32 = utils.fileCrc32(localfile)
         ret, err = put(token, key, open(localfile, 'rb'), crc32=crc32)
         assert err is None
         assert ret['key'] == key
 
     def test_putInvalidCrc(self):
-        key = 'test_%s' % randomString(9)
+        key = 'test_invalid'
         data = 'hello bubby!'
         crc32 = 'wrong crc32'
         token = self.q.uploadToken(bucketName)

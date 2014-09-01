@@ -77,14 +77,31 @@ class Bucket(object):
             params = dict(op=ops)
 
         r = requests.post(url, data=params, auth=RequestsAuth(self.auth))
-        ret = r.json()
+
+        ret = r.json() if r.text != '' else {}
         return ret
 
     def move(self, keyPairs, targetBucket=None):
-        pass
+        ops = []
+        url = 'http://%s/batch' % consts.RS_HOST
+        for k, v in keyPairs.items():
+            to = _entry(v, targetBucket) if targetBucket else self.__entry(v)
+            ops.append("/move/%s/%s" % (self.__entry(k), to))
+
+        r = requests.post(url, data=dict(op=ops), auth=RequestsAuth(self.auth))
+        ret = r.json()
+        return ret
 
     def copy(self, keyPairs, targetBucket=None):
-        pass
+        ops = []
+        url = 'http://%s/batch' % consts.RS_HOST
+        for k, v in keyPairs.items():
+            to = _entry(v, targetBucket) if targetBucket else self.__entry(v)
+            ops.append("/copy/%s/%s" % (self.__entry(k), to))
+
+        r = requests.post(url, data=dict(op=ops), auth=RequestsAuth(self.auth))
+        ret = r.json()
+        return ret
 
     def fetch(self, url, key):
         to = self.__entry(key)

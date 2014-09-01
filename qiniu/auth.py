@@ -105,7 +105,7 @@ class Auth(object):
 
         scope = bucket
         if key is not None:
-            scope = bucket + ':'
+            scope = '%s:%s' % (bucket, key)
 
         args = dict(
             scope=scope,
