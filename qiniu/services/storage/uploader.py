@@ -26,20 +26,17 @@ def put(upToken, key, data, params={}, mimeType='application/octet-stream', crc3
 
     if key:
         fields['key'] = key
+    else:
+        fields['key'] = ''
 
     fields['token'] = upToken
 
-    # fname = key
-    # if fname is None:
-    #     fname = _random_str(9)
-    # elif fname is '':
-    #     fname = 'index.html'
-    # undefined key ?
-
     url = 'http://' + qiniu.consts.UP_HOST + '/'
 
-    # todo catch exception
-    r = requests.post(url, data=fields, files={'file': (key, data, mimeType)})
+    # todo no key specify
+    name = key if key else 'filename'
+
+    r = requests.post(url, data=fields, files={'file': (name, data, mimeType)})
     ret = r.json()
     err = None
     return ret, err
