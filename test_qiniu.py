@@ -66,8 +66,11 @@ class BucketTestCase(unittest.TestCase):
     def test_listPrefix(self):
         ret, err = self.bucket.listByPrefix(limit=4)
         self.assertEqual(err is consts.EOF or err is None, True)
-        assert len(ret.get('items')) == 4
+        assert len(ret.get('items')) >= 1
 
+    def test_buckets(self):
+        ret, err = self.bucket.buckets()
+        assert bucketName in ret
 
 def r(length):
     lib = string.ascii_uppercase

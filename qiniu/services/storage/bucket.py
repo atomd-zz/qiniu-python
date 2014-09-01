@@ -63,3 +63,11 @@ class Bucket(object):
 
     def prefetch(self, url):
         pass
+
+    def buckets(self):
+        url = 'http://%s/buckets' % qiniu.consts.RS_HOST
+
+        r = requests.post(url, auth=RequestsAuth(self.auth))
+        ret = r.json()
+        err = None
+        return ret, err
