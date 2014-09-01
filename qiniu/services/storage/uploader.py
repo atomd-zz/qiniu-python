@@ -4,17 +4,17 @@ import string
 
 import requests
 
-import qiniu.consts
+from qiniu import consts
 from qiniu.auth import RequestsAuth
 
-from qiniu.utils import base64Encode
+from qiniu.utils import base64Encode, crc32
 
 
 def put(upToken, key, data, params={}, mimeType='application/octet-stream', crc32=None):
-    """ put data to Qiniu
+    ''' put data to Qiniu
     If key is None, the server will generate one.
     data may be str or read()able object.
-    """
+    '''
     fields = {}
 
     if params:
@@ -31,7 +31,7 @@ def put(upToken, key, data, params={}, mimeType='application/octet-stream', crc3
 
     fields['token'] = upToken
 
-    url = 'http://' + qiniu.consts.UP_HOST + '/'
+    url = 'http://' + consts.UP_HOST + '/'
 
     # todo no key specify
     name = key if key else 'filename'
@@ -47,44 +47,42 @@ _TRY_TIMES = 3
 
 _BLOCK_SIZE = 1024*1024*4
 
-
-err_put_failed = "resumable put failed"
-err_unmatched_checksum = "unmatched checksum"
+err_unmatched_checksum = 'unmatched checksum'
 
 
-def resumablePut(upToken, key, data, dataSize, params={}, mimeType=None):
-    task = _Resume(upToken, key, data, dataSize, params, mimeType)
+def resumablePut(upToken, key, reader, dataSize, params=None, mimeType=None):
+    task = _Resume(upToken, key, reader, dataSize, params, mimeType)
     return task.upload()
 
 
 class _Resume(object):
 
-    def __init__(self, upToken, key, data, dataSize, params={}, mimeType=None):
+    def __init__(self, upToken, key, reader, dataSize, params, mimeType):
         self.upToken = upToken
         self.key = key
-        self.data = data
-        self.dataSize = dataSize
+        self.reader = reader
+        self.size = dataSize
         self.params = params
         self.mimeType = mimeType
         # self.notify = notify
 
     def upload(self):
         self.blockCount = self.count()
-        self.blockStatus = [None] * blockCount
+        self.blockStatus = [None] * self.blockCount
 
         # todo cactch exception
-        for i in xrange(blockCount):
+        for i in xrange(self.blockCount):
             length = self.calcDataLengh(i)
-            dataBlock = f.read(readLength)
+            dataBlock = self.reader.read(length)
 
-            err = self.resumableBlockPut(upToken, dataBlock, length,  i)
+            err = self.resumableBlockPut(self.upToken, dataBlock, length,  i)
             if err is not None:
-                return None, err_put_failed, 0
+                return None, err, 0
 
-        return self.makeFile()
+        return self.makeFile(consts.UP_HOST)
 
     def resumableBlockPut(self, upToken, block, length, index):
-        if self.blockStatus[index] and "ctx" in self.blockStatus[index]:
+        if self.blockStatus[index] and 'ctx' in self.blockStatus[index]:
             return
         # todo retry
         self.blockStatus[index] = self.makeBlock(block, length)
@@ -93,7 +91,7 @@ class _Resume(object):
         #     self.notify(index, block_size, self.blockStatus[index])
         return
 
-    def blockCount(self):
+    def count(self):
         return (self.size + _BLOCK_SIZE - 1) / _BLOCK_SIZE
 
     def calcDataLengh(self, index):
@@ -105,31 +103,40 @@ class _Resume(object):
     def makeBlock(self, block, blockSize):
         crc = crc32(block)
         block = bytearray(block)
-        url = "http://%s/mkblk/%s" % (host, blockSize)
-        content_type = "application/octet-stream"
+        url = 'http://%s/mkblk/%s' % (consts.UP_HOST, blockSize)
 
-        ret = client.call_with(url, first_chunk, content_type, len(first_chunk))
+        headers = self.headers()
+        headers['Content-Type'] = 'application/octet-stream'
+
+        r = requests.post(url, data=block, headers=headers)
+        ret = r.json()
         if not ret['crc32'] == crc:
             raise err_unmatched_checksum
         return ret
 
     def makeFileUrl(self, host):
-        url = ["http://%s/mkfile/%s" % (host, self.size)]
+        url = ['http://%s/mkfile/%s' % (host, self.size)]
 
         if self.mimeType:
-            url.append("mimeType/%s" % base64Encode(self.mimeType))
+            url.append('mimeType/%s' % base64Encode(self.mimeType))
 
-        if key is not None:
-            url.append("key/%s" % base64Encode(key))
+        if self.key is not None:
+            url.append('key/%s' % base64Encode(self.key))
 
         if self.params:
             for k, v in self.params.iteritems():
-                url.append("%s/%s" % (k, base64Encode(v)))
+                url.append('%s/%s' % (k, base64Encode(v)))
 
-        url = "/".join(url)
+        url = '/'.join(url)
         return url
 
     def makeFile(self, host):
         url = self.makeFileUrl(host)
-        body = ",".join([status["ctx"] for status in self.blockStatus])
-        return client.call_with(url, body, "text/plain", len(body))
+        body = ','.join([status['ctx'] for status in self.blockStatus])
+
+        r = requests.post(url, data=body, headers=self.headers())
+        ret = r.json()
+        return ret, None
+
+    def headers(self):
+        return {'Authorization': 'UpToken %s' % self.upToken}

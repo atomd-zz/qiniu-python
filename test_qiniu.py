@@ -14,7 +14,7 @@ except ImportError:
 import unittest
 import pytest
 
-from qiniu import Bucket, DeprecatedApi, Auth, put, utils, consts
+from qiniu import Bucket, DeprecatedApi, Auth, put, resumablePut, utils, consts
 
 from requests.compat import is_py2
 
@@ -140,9 +140,22 @@ class UploaderTestCase(unittest.TestCase):
 
 
 class ResumableUploaderTestCase(unittest.TestCase):
-    def __init__(self, arg):
-        super(ResumableUploaderTestCase, self).__init__()
-        self.arg = arg
+
+    mime_type = "text/plain"
+    params = {'x:a': 'a'}
+    q = Auth(accessKey, secretKey)
+
+    def test_putFile(self):
+        localfile = __file__
+        key = 'test_file_r'
+
+        token = self.q.uploadToken(bucketName, key)
+        reader = open(localfile, 'rb')
+        size = os.stat(localfile).st_size
+        ret, err = resumablePut(token, key, reader, size)
+        assert err is None
+        assert ret['key'] == key
+
 
 if __name__ == '__main__':
     unittest.main()
