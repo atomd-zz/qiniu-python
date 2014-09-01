@@ -7,7 +7,7 @@ import requests
 import qiniu.consts
 from qiniu.auth import RequestsAuth
 
-from qiniu import base64Encode
+from qiniu.utils import base64Encode
 
 
 def put(upToken, key, data, params={}, mimeType='application/octet-stream', crc32=None):
@@ -38,7 +38,7 @@ def put(upToken, key, data, params={}, mimeType='application/octet-stream', crc3
 
     url = 'http://' + qiniu.consts.UP_HOST + '/'
 
-    #todo catch exception
+    # todo catch exception
     r = requests.post(url, data=fields, files={'file': (key, data, mimeType)})
     ret = r.json()
     err = None
@@ -51,21 +51,18 @@ _TRY_TIMES = 3
 _BLOCK_SIZE = 1024*1024*4
 
 
-err_put_failed = ResumableIoError("resumable put failed")
-err_unmatched_checksum = ResumableIoError("unmatched checksum")
-err_putself_type = ResumableIoError("self must the instance of Putself")
+err_put_failed = "resumable put failed"
+err_unmatched_checksum = "unmatched checksum"
 
 
 def resumablePut(upToken, key, data, dataSize, params={}, mimeType=None):
     task = _Resume(upToken, key, data, dataSize, params, mimeType)
     return task.upload()
 
-def _count(size):
 
 class _Resume(object):
 
-    def __init__(self, upToken, key, data, dataSize, params={},
-            mimeType=None):
+    def __init__(self, upToken, key, data, dataSize, params={}, mimeType=None):
         self.upToken = upToken
         self.key = key
         self.data = data
@@ -88,7 +85,6 @@ class _Resume(object):
                 return None, err_put_failed, 0
 
         return self.makeFile()
-
 
     def resumableBlockPut(self, upToken, block, length, index):
         if self.blockStatus[index] and "ctx" in self.blockStatus[index]:
@@ -115,7 +111,7 @@ class _Resume(object):
         url = "http://%s/mkblk/%s" % (host, blockSize)
         content_type = "application/octet-stream"
         ret = client.call_with(url, first_chunk, content_type, len(first_chunk))
-        if ret['crc32'] != crc32
+        if not ret['crc32'] == crc:
             raise err_unmatched_checksum
         return ret
 

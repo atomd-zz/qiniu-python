@@ -14,9 +14,7 @@ except ImportError:
 import unittest
 import pytest
 
-from qiniu import Bucket, DeprecatedApi, Auth, put, putFile
-
-import qiniu.consts
+from qiniu import Bucket, DeprecatedApi, Auth, put, utils, consts
 
 import sys
 reload(sys)
@@ -64,7 +62,7 @@ class BucketTestCase(unittest.TestCase):
 
     def test_listPrefix(self):
         ret, err = self.bucket.listByPrefix(limit=4)
-        self.assertEqual(err is qiniu.consts.EOF or err is None, True)
+        self.assertEqual(err is consts.EOF or err is None, True)
         assert len(ret.get('items')) == 4
 
 
@@ -82,10 +80,9 @@ class UploaderTestCase(unittest.TestCase):
     def test_put(self):
         key = 'a\\b\\c"你好' + r(9)
         data = 'hello bubby!'
-        checkCrc = 2
-        crc32 = binascii.crc32(data) & 0xFFFFFFFF
+        crc32 = utils.crc32(data)
         token = self.q.uploadToken(bucketName)
-        ret, err = put(token, key, data, checkCrc=2, crc32=crc32)
+        ret, err = put(token, key, data, crc32=crc32)
         assert err is None
         assert ret['key'] == key
 
@@ -94,17 +91,17 @@ class UploaderTestCase(unittest.TestCase):
         key = "test_%s" % r(9)
 
         token = self.q.uploadToken(bucketName)
-        ret, err = putFile(token, key, localfile, checkCrc=1)
+        crc32 = utils.fileCrc32(localfile)
+        ret, err = put(token, key, open(localfile, 'rb'), crc32=crc32)
         assert err is None
         assert ret['key'] == key
 
     def test_putInvalidCrc(self):
         key = 'test_%s' % r(9)
         data = 'hello bubby!'
-        checkCrc = 2
         crc32 = 'wrong crc32'
         token = self.q.uploadToken(bucketName)
-        ret, err = put(token, key, data, checkCrc=2, crc32=crc32)
+        ret, err = put(token, key, data, crc32=crc32)
         # assert err is not None
 
 

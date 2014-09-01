@@ -14,4 +14,4 @@ from .auth import Auth
 from .exceptions import DeprecatedApi
 
 from .services.storage.bucket import Bucket
-from .services.storage.uploader import put, putFile, resumablePut, resumablePutFile
+from .services.storage.uploader import put, resumablePut

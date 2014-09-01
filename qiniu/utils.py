@@ -30,6 +30,9 @@ def base64Encode(data):
             ret = ret.decode('utf-8')
     return ret
 
+_BLOCK_SIZE = 1024 * 1024 * 4
+
+
 def fileCrc32(filePath):
     with open(filePath, 'rb') as f:
         block = f.read(_BLOCK_SIZE)
@@ -38,6 +41,7 @@ def fileCrc32(filePath):
             crc = binascii.crc32(block, crc) & 0xFFFFFFFF
             block = f.read(_BLOCK_SIZE)
     return str(crc)
+
 
 def crc32(data):
     return binascii.crc32(data) & 0xffffffff
