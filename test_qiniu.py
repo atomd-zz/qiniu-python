@@ -16,9 +16,12 @@ import pytest
 
 from qiniu import Bucket, DeprecatedApi, Auth, put, utils, consts
 
-import sys
-reload(sys)
-sys.setdefaultencoding('utf-8')
+from requests.compat import is_py2
+
+if is_py2:
+    import sys
+    reload(sys)
+    sys.setdefaultencoding('utf-8')
 
 accessKey = os.getenv("QINIU_ACCESS_KEY")
 secretKey = os.getenv("QINIU_SECRET_KEY")

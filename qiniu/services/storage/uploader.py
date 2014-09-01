@@ -110,6 +110,7 @@ class _Resume(object):
         block = bytearray(block)
         url = "http://%s/mkblk/%s" % (host, blockSize)
         content_type = "application/octet-stream"
+
         ret = client.call_with(url, first_chunk, content_type, len(first_chunk))
         if not ret['crc32'] == crc:
             raise err_unmatched_checksum
