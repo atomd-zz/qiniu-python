@@ -58,8 +58,15 @@ class Bucket(object):
     def copy(self, keyPairs, targetBucket=None):
         pass
 
-    def fetch(self, key, url):
-        pass
+    def fetch(self, url, key):
+        to = base64Encode('%s:%s' % (self.bucket, key))
+        resource = base64Encode(url)
+        cmd = 'http://%s/fetch/%s/to/%s' % (consts.IO_HOST, resource, to)
+
+        r = requests.post(cmd, auth=RequestsAuth(self.auth))
+        ret = r.json()
+        err = None
+        return ret, err
 
     def prefetch(self, key):
         resource = base64Encode('%s:%s' % (self.bucket, key))
@@ -69,7 +76,6 @@ class Bucket(object):
         ret = r.json()
         err = None
         return ret, err
-
 
     def buckets(self):
         url = 'http://%s/buckets' % consts.RS_HOST

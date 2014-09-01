@@ -74,9 +74,16 @@ class BucketTestCase(unittest.TestCase):
 
     def test_pefetch(self):
         ret, err = self.bucket.prefetch('python-sdk.html')
+        assert ret == {}
         assert err is None
 
-def r(length):
+    def test_fetch(self):
+        ret, err = self.bucket.fetch('http://developer.qiniu.com/docs/v6/sdk/python-sdk.html', 'fetch.html')
+        assert ret == {}
+        assert err is None
+
+
+def randomString(length):
     lib = string.ascii_uppercase
     return ''.join([random.choice(lib) for i in range(0, length)])
 
@@ -88,7 +95,7 @@ class UploaderTestCase(unittest.TestCase):
     q = Auth(accessKey, secretKey)
 
     def test_put(self):
-        key = 'a\\b\\c"你好' + r(9)
+        key = 'a\\b\\c"你好' + randomString(9)
         data = 'hello bubby!'
         crc32 = utils.crc32(data)
         token = self.q.uploadToken(bucketName)
@@ -98,7 +105,7 @@ class UploaderTestCase(unittest.TestCase):
 
     def test_putFile(self):
         localfile = '%s' % __file__
-        key = "test_%s" % r(9)
+        key = "test_%s" % randomString(9)
 
         token = self.q.uploadToken(bucketName)
         crc32 = utils.fileCrc32(localfile)
@@ -107,7 +114,7 @@ class UploaderTestCase(unittest.TestCase):
         assert ret['key'] == key
 
     def test_putInvalidCrc(self):
-        key = 'test_%s' % r(9)
+        key = 'test_%s' % randomString(9)
         data = 'hello bubby!'
         crc32 = 'wrong crc32'
         token = self.q.uploadToken(bucketName)
