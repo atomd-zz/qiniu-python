@@ -69,18 +69,22 @@ class BucketTestCase(unittest.TestCase):
         assert len(ret.get('items')) >= 1
 
     def test_buckets(self):
-        ret, err = self.bucket.buckets()
+        ret = self.bucket.buckets()
         assert bucketName in ret
 
     def test_pefetch(self):
-        ret, err = self.bucket.prefetch('python-sdk.html')
+        ret = self.bucket.prefetch('python-sdk.html')
         assert ret == {}
-        assert err is None
 
     def test_fetch(self):
-        ret, err = self.bucket.fetch('http://developer.qiniu.com/docs/v6/sdk/python-sdk.html', 'fetch.html')
+        ret = self.bucket.fetch('http://developer.qiniu.com/docs/v6/sdk/python-sdk.html', 'fetch.html')
         assert ret == {}
-        assert err is None
+
+    def test_stat(self):
+        ret = self.bucket.stat('python-sdk.html')
+        assert 'hash' in ret
+        ret = self.bucket.stat(['python-sdk.html'])
+        assert 'hash' in ret[0]['data']
 
 
 def randomString(length):

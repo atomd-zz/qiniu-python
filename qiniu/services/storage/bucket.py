@@ -47,7 +47,21 @@ class Bucket(object):
         return ret, err
 
     def stat(self, keys):
-        pass
+        url = None
+        params = None
+        if isinstance(keys, str):
+            resource = self.__entry(keys)
+            url = 'http://%s/stat/%s' % (consts.RS_HOST, resource)
+        else:
+            ops = []
+            for key in keys:
+                ops.append("/stat/%s" % self.__entry(key))
+            url = 'http://%s/batch' % consts.RS_HOST
+            params = dict(op=ops)
+
+        r = requests.post(url, data=params, auth=RequestsAuth(self.auth))
+        ret = r.json()
+        return ret
 
     def delete(self, keys):
         pass
@@ -59,28 +73,32 @@ class Bucket(object):
         pass
 
     def fetch(self, url, key):
-        to = base64Encode('%s:%s' % (self.bucket, key))
+        to = self.__entry(key)
         resource = base64Encode(url)
         cmd = 'http://%s/fetch/%s/to/%s' % (consts.IO_HOST, resource, to)
 
         r = requests.post(cmd, auth=RequestsAuth(self.auth))
         ret = r.json()
-        err = None
-        return ret, err
+        return ret
 
     def prefetch(self, key):
-        resource = base64Encode('%s:%s' % (self.bucket, key))
+        resource = self.__entry(key)
         url = 'http://%s/prefetch/%s' % (consts.IO_HOST, resource)
 
         r = requests.post(url, auth=RequestsAuth(self.auth))
         ret = r.json()
-        err = None
-        return ret, err
+        return ret
 
     def buckets(self):
         url = 'http://%s/buckets' % consts.RS_HOST
 
         r = requests.post(url, auth=RequestsAuth(self.auth))
         ret = r.json()
-        err = None
-        return ret, err
+        return ret
+
+    def __entry(self, key):
+        return _entry(self.bucket, key)
+
+
+def _entry(bucket, key):
+    return base64Encode('%s:%s' % (bucket, key))

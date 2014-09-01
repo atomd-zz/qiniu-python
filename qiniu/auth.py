@@ -62,7 +62,7 @@ class Auth(object):
         data = base64Encode(data)
         return '%s:%s:%s' % (self.__accessKey, self.__token(data), data)
 
-    def tokenOfRequest(self, url, body=None, content_type=None):
+    def tokenOfRequest(self, url, body=None, contentType=None):
         parsedUrl = urlparse(url)
         query = parsedUrl.query
         path = parsedUrl.path
@@ -75,7 +75,7 @@ class Auth(object):
             mimes = [
                 'application/x-www-form-urlencoded',
             ]
-            if content_type in mimes:
+            if contentType in mimes:
                 data += body
 
         return '%s:%s' % (self.__accessKey, self.__token(data))
@@ -131,6 +131,10 @@ class RequestsAuth(AuthBase):
         self.auth = auth
 
     def __call__(self, r):
-        token = self.auth.tokenOfRequest(r.url)
+        token = None
+        if r.body is not None and r.headers['Content-Type'] == 'application/x-www-form-urlencoded':
+            token = self.auth.tokenOfRequest(r.url, r.body, 'application/x-www-form-urlencoded')
+        else:
+            token = self.auth.tokenOfRequest(r.url)
         r.headers['Authorization'] = 'QBox %s' % token
         return r
