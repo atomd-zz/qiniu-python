@@ -2,7 +2,7 @@
 
 import requests
 
-import qiniu.consts
+from qiniu import consts
 from qiniu.auth import RequestsAuth
 
 from qiniu.utils import base64Encode
@@ -36,7 +36,7 @@ class Bucket(object):
         if prefix is not None:
             options['prefix'] = prefix
 
-        url = 'http://%s/list' % qiniu.consts.RSF_HOST
+        url = 'http://%s/list' % consts.RSF_HOST
 
         r = requests.get(url, params=options, auth=RequestsAuth(self.auth))
         ret = r.json()
@@ -61,11 +61,18 @@ class Bucket(object):
     def fetch(self, key, url):
         pass
 
-    def prefetch(self, url):
-        pass
+    def prefetch(self, key):
+        resource = base64Encode('%s:%s' % (self.bucket, key))
+        url = 'http://%s/prefetch/%s' % (consts.IO_HOST, resource)
+
+        r = requests.post(url, auth=RequestsAuth(self.auth))
+        ret = r.json()
+        err = None
+        return ret, err
+
 
     def buckets(self):
-        url = 'http://%s/buckets' % qiniu.consts.RS_HOST
+        url = 'http://%s/buckets' % consts.RS_HOST
 
         r = requests.post(url, auth=RequestsAuth(self.auth))
         ret = r.json()

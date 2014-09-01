@@ -72,6 +72,10 @@ class BucketTestCase(unittest.TestCase):
         ret, err = self.bucket.buckets()
         assert bucketName in ret
 
+    def test_pefetch(self):
+        ret, err = self.bucket.prefetch('python-sdk.html')
+        assert err is None
+
 def r(length):
     lib = string.ascii_uppercase
     return ''.join([random.choice(lib) for i in range(0, length)])
