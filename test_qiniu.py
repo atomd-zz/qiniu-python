@@ -107,7 +107,7 @@ class BucketTestCase(unittest.TestCase):
 
 class UploaderTestCase(unittest.TestCase):
 
-    mime_type = "text/plain"
+    mimeType = "text/plain"
     params = {'x:a': 'a'}
     q = Auth(accessKey, secretKey)
 
@@ -126,7 +126,7 @@ class UploaderTestCase(unittest.TestCase):
 
         token = self.q.uploadToken(bucketName, key)
         crc32 = utils.fileCrc32(localfile)
-        ret, err = put(token, key, open(localfile, 'rb'), crc32=crc32)
+        ret, err = put(token, key, open(localfile, 'rb'), mimeType=self.mimeType, crc32=crc32)
         assert err is None
         assert ret['key'] == key
 
@@ -141,7 +141,7 @@ class UploaderTestCase(unittest.TestCase):
 
 class ResumableUploaderTestCase(unittest.TestCase):
 
-    mime_type = "text/plain"
+    mimeType = "text/plain"
     params = {'x:a': 'a'}
     q = Auth(accessKey, secretKey)
 
@@ -152,7 +152,7 @@ class ResumableUploaderTestCase(unittest.TestCase):
         token = self.q.uploadToken(bucketName, key)
         reader = open(localfile, 'rb')
         size = os.stat(localfile).st_size
-        ret, err = resumablePut(token, key, reader, size)
+        ret, err = resumablePut(token, key, reader, size, self.params, self.mimeType)
         assert err is None
         assert ret['key'] == key
 
