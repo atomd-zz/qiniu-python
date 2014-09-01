@@ -40,7 +40,7 @@ def fileCrc32(filePath):
         while len(block) != 0:
             crc = binascii.crc32(block, crc) & 0xFFFFFFFF
             block = f.read(_BLOCK_SIZE)
-    return str(crc)
+    return crc
 
 
 def crc32(data):
