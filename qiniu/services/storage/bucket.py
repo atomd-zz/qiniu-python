@@ -64,7 +64,21 @@ class Bucket(object):
         return ret
 
     def delete(self, keys):
-        pass
+        url = None
+        params = None
+        if isinstance(keys, str):
+            resource = self.__entry(keys)
+            url = 'http://%s/delete/%s' % (consts.RS_HOST, resource)
+        else:
+            ops = []
+            for key in keys:
+                ops.append("/delete/%s" % self.__entry(key))
+            url = 'http://%s/batch' % consts.RS_HOST
+            params = dict(op=ops)
+
+        r = requests.post(url, data=params, auth=RequestsAuth(self.auth))
+        ret = r.json()
+        return ret
 
     def move(self, keyPairs, targetBucket=None):
         pass

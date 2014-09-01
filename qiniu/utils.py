@@ -14,10 +14,10 @@ except ImportError:
 
 from requests.compat import is_py2
 
-sys_info = "%s/%s" % (platform.system(), platform.machine())
+sys_info = "%s; %s" % (platform.system(), platform.machine())
 py_ver = platform.python_version()
 
-USER_AGENT = "QiniuPython/%s (%s) Python/%s" % (__version__, sys_info, py_ver)
+USER_AGENT = "QiniuPython/%s (%s; ) Python/%s" % (__version__, sys_info, py_ver)
 
 
 def base64Encode(data):

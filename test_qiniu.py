@@ -86,6 +86,12 @@ class BucketTestCase(unittest.TestCase):
         ret = self.bucket.stat(['python-sdk.html'])
         assert 'hash' in ret[0]['data']
 
+    def test_delete(self):
+        ret = self.bucket.delete('del')
+        assert ret['error'] == 'no such file or directory'
+        ret = self.bucket.delete(['del'])
+        assert 612 == ret[0]['code'] and ret[0]['data']['error'] == 'no such file or directory'
+
 
 def randomString(length):
     lib = string.ascii_uppercase
