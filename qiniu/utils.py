@@ -5,6 +5,13 @@ import platform
 
 from base64 import urlsafe_b64encode
 
+try:
+    import zlib
+    binascii = zlib
+except ImportError:
+    zlib = None
+    import binascii
+
 from requests.compat import is_py2
 
 sys_info = "%s/%s" % (platform.system(), platform.machine())
@@ -22,3 +29,15 @@ def base64Encode(data):
         if isinstance(data, bytes):
             ret = ret.decode('utf-8')
     return ret
+
+def fileCrc32(filePath):
+    with open(filePath, 'rb') as f:
+        block = f.read(_BLOCK_SIZE)
+        crc = 0
+        while len(block) != 0:
+            crc = binascii.crc32(block, crc) & 0xFFFFFFFF
+            block = f.read(_BLOCK_SIZE)
+    return str(crc)
+
+def crc32(data):
+    return binascii.crc32(data) & 0xffffffff

@@ -13,6 +13,7 @@ from .exceptions import DeprecatedApi
 
 from .utils import base64Encode
 
+
 _policyFields = set([
     'callbackUrl',
     'callbackBody',

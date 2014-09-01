@@ -63,23 +63,3 @@ class Bucket(object):
 
     def prefetch(self, url):
         pass
-
-
-def __uri_stat(bucket, key):
-    return "/stat/%s" % base64Encode("%s:%s" % (bucket, key))
-
-
-def __uri_delete(bucket, key):
-    return "/delete/%s" % base64Encode("%s:%s" % (bucket, key))
-
-
-def __uri_move(bucket_src, key_src, bucketDest, key_dest):
-    src = base64Encode("%s:%s" % (bucket_src, key_src))
-    dest = base64Encode("%s:%s" % (bucketDest, key_dest))
-    return "/move/%s/%s" % (src, dest)
-
-
-def __uri_copy(bucket_src, key_src, bucketDest, key_dest):
-    src = base64Encode("%s:%s" % (bucket_src, key_src))
-    dest = base64Encode("%s:%s" % (bucketDest, key_dest))
-    return "/copy/%s/%s" % (src, dest)
