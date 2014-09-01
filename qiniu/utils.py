@@ -44,4 +44,7 @@ def fileCrc32(filePath):
 
 
 def crc32(data):
+    if not is_py2:
+        if isinstance(data, str):
+            data = bytes(data, 'utf-8')
     return binascii.crc32(data) & 0xffffffff
