@@ -92,7 +92,7 @@ class _Resume(object):
         return
 
     def count(self):
-        return (self.size + _BLOCK_SIZE - 1) / _BLOCK_SIZE
+        return (self.size + _BLOCK_SIZE - 1) // _BLOCK_SIZE
 
     def calcDataLengh(self, index):
         need = _BLOCK_SIZE
