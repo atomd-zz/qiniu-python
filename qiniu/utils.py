@@ -48,3 +48,6 @@ def crc32(data):
         if isinstance(data, str):
             data = bytes(data, 'utf-8')
     return binascii.crc32(data) & 0xffffffff
+
+def etag(filepath):
+    pass

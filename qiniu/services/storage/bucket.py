@@ -14,7 +14,7 @@ class Bucket(object):
         self.auth = auth
         self.bucket = bucket
 
-    def listByPrefix(self, prefix=None, marker=None, limit=None):
+    def list(self, prefix=None, marker=None, limit=None):
         """前缀查询:
          * bucket => str
          * prefix => str
@@ -40,11 +40,11 @@ class Bucket(object):
 
         r = requests.get(url, params=options, auth=RequestsAuth(self.auth))
         ret = r.json()
-        err = None
+        eof = False
         if ret and not ret.get('marker'):
-            err = qiniu.consts.EOF
+            eof = True
 
-        return ret, err
+        return ret, eof
 
     def stat(self, keys):
         url = None

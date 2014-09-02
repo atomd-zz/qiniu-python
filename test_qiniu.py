@@ -68,10 +68,12 @@ class BucketTestCase(unittest.TestCase):
     q = Auth(accessKey, secretKey)
     bucket = Bucket(bucketName, q)
 
-    def test_listPrefix(self):
-        ret, err = self.bucket.listByPrefix(limit=4)
-        self.assertEqual(err is consts.EOF or err is None, True)
-        assert len(ret.get('items')) >= 1
+    def test_list(self):
+        ret, eof = self.bucket.list(limit=4)
+        assert eof is False
+        assert len(ret.get('items')) == 4
+        ret, eof = self.bucket.list(limit=100)
+        assert eof is True
 
     def test_buckets(self):
         ret = self.bucket.buckets()
