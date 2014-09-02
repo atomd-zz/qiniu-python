@@ -4,17 +4,10 @@ import os
 import string
 import random
 
-try:
-    import zlib
-    binascii = zlib
-except ImportError:
-    zlib = None
-    import binascii
-
 import unittest
 import pytest
 
-from qiniu import Bucket, DeprecatedApi, Auth, put, resumablePut, utils, consts
+from qiniu import Bucket, DeprecatedApi, Auth, put, resumablePut, utils
 
 from requests.compat import is_py2
 

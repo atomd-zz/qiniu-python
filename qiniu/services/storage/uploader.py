@@ -1,12 +1,8 @@
 # -*- coding: utf-8 -*-
 
-import string
-
 import requests
 
 from qiniu import consts
-from qiniu.auth import RequestsAuth
-
 from qiniu.utils import base64Encode, crc32
 
 
