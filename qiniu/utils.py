@@ -4,6 +4,7 @@ from . import __version__
 import platform
 
 from base64 import urlsafe_b64encode
+from .exceptions import QiniuException
 
 try:
     import zlib
@@ -48,6 +49,15 @@ def crc32(data):
         if isinstance(data, str):
             data = bytes(data, 'utf-8')
     return binascii.crc32(data) & 0xffffffff
+
+
+def _ret(req):
+    ret = req.json() if req.text != '' else {}
+    if req.status_code//100 != 2:
+        reqId = req.headers['X-Reqid']
+        raise QiniuException(req.status_code, ret['error'], reqId)
+    return ret
+
 
 def etag(filepath):
     pass

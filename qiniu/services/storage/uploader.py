@@ -3,7 +3,8 @@
 import requests
 
 from qiniu import consts
-from qiniu.utils import base64Encode, crc32
+from qiniu.utils import base64Encode, crc32, _ret
+from qiniu.exceptions import QiniuException
 
 
 def put(upToken, key, data, params={}, mimeType='application/octet-stream', crc32=None):
@@ -30,22 +31,15 @@ def put(upToken, key, data, params={}, mimeType='application/octet-stream', crc3
     name = key if key else 'filename'
 
     r = requests.post(url, data=fields, files={'file': (name, data, mimeType)}, timeout=consts.DEFAULT_TIMEOUT)
-    ret = r.json()
-    err = None
-    return ret, err
-
-
-_TASK_QUEUE_SIZE = 4
-_TRY_TIMES = 3
-
-_BLOCK_SIZE = 1024*1024*4
-
-err_unmatched_checksum = 'unmatched checksum'
+    return _ret(r)
 
 
 def resumablePut(upToken, key, reader, dataSize, params=None, mimeType=None):
     task = _Resume(upToken, key, reader, dataSize, params, mimeType)
     return task.upload()
+
+
+_BLOCK_SIZE = 1024 * 1024 * 4
 
 
 class _Resume(object):
@@ -68,9 +62,7 @@ class _Resume(object):
             length = self.calcDataLengh(i)
             dataBlock = self.reader.read(length)
 
-            err = self.resumableBlockPut(self.upToken, dataBlock, length,  i)
-            if err is not None:
-                return None, err, 0
+            self.resumableBlockPut(self.upToken, dataBlock, length,  i)
 
         return self.makeFile(consts.UP_HOST)
 
@@ -79,9 +71,7 @@ class _Resume(object):
             return
         # todo retry
         self.blockStatus[index] = self.makeBlock(block, length)
-        # todo notify
-        # if self.notify:
-        #     self.notify(index, block_size, self.blockStatus[index])
+
         return
 
     def count(self):
@@ -102,9 +92,9 @@ class _Resume(object):
         headers['Content-Type'] = 'application/octet-stream'
 
         r = requests.post(url, data=block, headers=headers, timeout=consts.DEFAULT_TIMEOUT)
-        ret = r.json()
-        if not ret['crc32'] == crc:
-            raise err_unmatched_checksum
+        ret = _ret(r)
+        if ret['crc32'] != crc:
+            raise QiniuException(r.status_code, 'unmatch crc checksum', r.headers['X-Reqid'])
         return ret
 
     def makeFileUrl(self, host):
@@ -128,8 +118,7 @@ class _Resume(object):
         body = ','.join([status['ctx'] for status in self.blockStatus])
 
         r = requests.post(url, data=body, headers=self.headers(), timeout=consts.DEFAULT_TIMEOUT)
-        ret = r.json()
-        return ret, None
+        return _ret(r)
 
     def headers(self):
         return {'Authorization': 'UpToken %s' % self.upToken}

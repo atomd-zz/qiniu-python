@@ -11,7 +11,7 @@ __version__ = '7.0.0'
 
 from .auth import Auth
 
-from .exceptions import DeprecatedApi
+from .exceptions import DeprecatedApi, QiniuException
 
 from .services.storage.bucket import Bucket
 from .services.storage.uploader import put, resumablePut

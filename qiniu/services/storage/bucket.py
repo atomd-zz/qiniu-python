@@ -5,7 +5,7 @@ import requests
 from qiniu import consts
 from qiniu.auth import RequestsAuth
 
-from qiniu.utils import base64Encode
+from qiniu.utils import base64Encode, _ret
 
 
 class Bucket(object):
@@ -39,8 +39,10 @@ class Bucket(object):
         url = 'http://%s/list' % consts.RSF_HOST
 
         r = requests.get(url, params=options, auth=RequestsAuth(self.auth), timeout=consts.DEFAULT_TIMEOUT)
-        ret = r.json()
+        ret = _ret(r)
+
         eof = False
+
         if ret and not ret.get('marker'):
             eof = True
 
@@ -60,8 +62,7 @@ class Bucket(object):
             params = dict(op=ops)
 
         r = requests.post(url, data=params, auth=RequestsAuth(self.auth), timeout=consts.DEFAULT_TIMEOUT)
-        ret = r.json()
-        return ret
+        return _ret(r)
 
     def delete(self, keys):
         url = None
@@ -77,9 +78,7 @@ class Bucket(object):
             params = dict(op=ops)
 
         r = requests.post(url, data=params, auth=RequestsAuth(self.auth), timeout=consts.DEFAULT_TIMEOUT)
-
-        ret = r.json() if r.text != '' else {}
-        return ret
+        return _ret(r)
 
     def move(self, keyPairs, targetBucket=None):
         ops = []
@@ -89,8 +88,7 @@ class Bucket(object):
             ops.append("/move/%s/%s" % (self.__entry(k), to))
 
         r = requests.post(url, data=dict(op=ops), auth=RequestsAuth(self.auth), timeout=consts.DEFAULT_TIMEOUT)
-        ret = r.json()
-        return ret
+        return _ret(r)
 
     def copy(self, keyPairs, targetBucket=None):
         ops = []
@@ -100,8 +98,7 @@ class Bucket(object):
             ops.append("/copy/%s/%s" % (self.__entry(k), to))
 
         r = requests.post(url, data=dict(op=ops), auth=RequestsAuth(self.auth), timeout=consts.DEFAULT_TIMEOUT)
-        ret = r.json()
-        return ret
+        return _ret(r)
 
     def fetch(self, url, key):
         to = self.__entry(key)
@@ -109,23 +106,20 @@ class Bucket(object):
         cmd = 'http://%s/fetch/%s/to/%s' % (consts.IO_HOST, resource, to)
 
         r = requests.post(cmd, auth=RequestsAuth(self.auth), timeout=consts.DEFAULT_TIMEOUT)
-        ret = r.json()
-        return ret
+        return _ret(r)
 
     def prefetch(self, key):
         resource = self.__entry(key)
         url = 'http://%s/prefetch/%s' % (consts.IO_HOST, resource)
 
         r = requests.post(url, auth=RequestsAuth(self.auth))
-        ret = r.json()
-        return ret
+        return _ret(r)
 
     def buckets(self):
         url = 'http://%s/buckets' % consts.RS_HOST
 
         r = requests.post(url, auth=RequestsAuth(self.auth), timeout=consts.DEFAULT_TIMEOUT)
-        ret = r.json()
-        return ret
+        return _ret(r)
 
     def __entry(self, key):
         return _entry(self.bucket, key)

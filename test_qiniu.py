@@ -7,7 +7,7 @@ import random
 import unittest
 import pytest
 
-from qiniu import Bucket, DeprecatedApi, Auth, put, resumablePut, utils
+from qiniu import Bucket, DeprecatedApi, QiniuException, Auth, put, resumablePut, utils
 
 from requests.compat import is_py2
 
@@ -87,8 +87,9 @@ class BucketTestCase(unittest.TestCase):
         assert 'hash' in ret[0]['data']
 
     def test_delete(self):
-        ret = self.bucket.delete('del')
-        assert ret['error'] == 'no such file or directory'
+        with pytest.raises(QiniuException):
+            ret = self.bucket.delete('del')
+
         ret = self.bucket.delete(['del'])
         assert 612 == ret[0]['code'] and ret[0]['data']['error'] == 'no such file or directory'
 
@@ -119,16 +120,14 @@ class UploaderTestCase(unittest.TestCase):
         data = 'hello bubby!'
         crc32 = utils.crc32(data)
         token = self.q.uploadToken(bucketName)
-        ret, err = put(token, key, data, crc32=crc32)
-        assert err is None
+        ret = put(token, key, data, crc32=crc32)
         assert ret['key'] == key
 
         key = ''
         data = 'hello bubby!'
         crc32 = utils.crc32(data)
         token = self.q.uploadToken(bucketName, key)
-        ret, err = put(token, key, data, crc32=crc32)
-        assert err is None
+        ret = put(token, key, data, crc32=crc32)
         assert ret['key'] == key
 
     def test_putFile(self):
@@ -137,8 +136,7 @@ class UploaderTestCase(unittest.TestCase):
 
         token = self.q.uploadToken(bucketName, key)
         crc32 = utils.fileCrc32(localfile)
-        ret, err = put(token, key, open(localfile, 'rb'), mimeType=self.mimeType, crc32=crc32)
-        assert err is None
+        ret = put(token, key, open(localfile, 'rb'), mimeType=self.mimeType, crc32=crc32)
         assert ret['key'] == key
 
     def test_putInvalidCrc(self):
@@ -146,22 +144,21 @@ class UploaderTestCase(unittest.TestCase):
         data = 'hello bubby!'
         crc32 = 'wrong crc32'
         token = self.q.uploadToken(bucketName)
-        ret, err = put(token, key, data, crc32=crc32)
-        # assert err is not None
+        with pytest.raises(QiniuException):
+            put(token, key, data, crc32=crc32)
 
     def test_putWithoutKey(self):
         key = None
         data = 'hello bubby!'
         token = self.q.uploadToken(bucketName)
-        ret, err = put(token, key, data)
-        assert err is None
+        ret = put(token, key, data)
         assert ret['hash'] == ret['key']
 
         data = 'hello bubby!'
         token = self.q.uploadToken(bucketName, 'nokey2')
-        ret, err = put(token, None, data)
-        assert err is None
-        assert ret['error'] is not None
+
+        with pytest.raises(QiniuException):
+            put(token, None, data)
 
 
 class ResumableUploaderTestCase(unittest.TestCase):
@@ -177,8 +174,7 @@ class ResumableUploaderTestCase(unittest.TestCase):
         token = self.q.uploadToken(bucketName, key)
         reader = open(localfile, 'rb')
         size = os.stat(localfile).st_size
-        ret, err = resumablePut(token, key, reader, size, self.params, self.mimeType)
-        assert err is None
+        ret = resumablePut(token, key, reader, size, self.params, self.mimeType)
         assert ret['key'] == key
 
 
