@@ -20,16 +20,13 @@ def put(upToken, key, data, params={}, mimeType='application/octet-stream', crc3
     if crc32:
         fields['crc32'] = crc32
 
-    if key:
+    if key is not None:
         fields['key'] = key
-    else:
-        fields['key'] = ''
 
     fields['token'] = upToken
 
     url = 'http://' + consts.UP_HOST + '/'
 
-    # todo no key specify
     name = key if key else 'filename'
 
     r = requests.post(url, data=fields, files={'file': (name, data, mimeType)}, timeout=consts.DEFAULT_TIMEOUT)

@@ -123,6 +123,14 @@ class UploaderTestCase(unittest.TestCase):
         assert err is None
         assert ret['key'] == key
 
+        key = ''
+        data = 'hello bubby!'
+        crc32 = utils.crc32(data)
+        token = self.q.uploadToken(bucketName, key)
+        ret, err = put(token, key, data, crc32=crc32)
+        assert err is None
+        assert ret['key'] == key
+
     def test_putFile(self):
         localfile = __file__
         key = 'test_file'
@@ -140,6 +148,20 @@ class UploaderTestCase(unittest.TestCase):
         token = self.q.uploadToken(bucketName)
         ret, err = put(token, key, data, crc32=crc32)
         # assert err is not None
+
+    def test_putWithoutKey(self):
+        key = None
+        data = 'hello bubby!'
+        token = self.q.uploadToken(bucketName)
+        ret, err = put(token, key, data)
+        assert err is None
+        assert ret['hash'] == ret['key']
+
+        data = 'hello bubby!'
+        token = self.q.uploadToken(bucketName, 'nokey2')
+        ret, err = put(token, None, data)
+        assert err is None
+        assert ret['error'] is not None
 
 
 class ResumableUploaderTestCase(unittest.TestCase):
