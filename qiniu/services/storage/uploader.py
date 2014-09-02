@@ -6,6 +6,10 @@ from qiniu import consts
 from qiniu.utils import base64Encode, crc32, _ret
 from qiniu.exceptions import QiniuException
 
+_session = requests.Session()
+_adapter = requests.adapters.HTTPAdapter(max_retries=3)
+_session.mount('http://', _adapter)
+
 
 def put(upToken, key, data, params={}, mimeType='application/octet-stream', crc32=None):
     ''' put data to Qiniu
@@ -30,7 +34,7 @@ def put(upToken, key, data, params={}, mimeType='application/octet-stream', crc3
 
     name = key if key else 'filename'
 
-    r = requests.post(url, data=fields, files={'file': (name, data, mimeType)}, timeout=consts.DEFAULT_TIMEOUT)
+    r = _session.post(url, data=fields, files={'file': (name, data, mimeType)}, timeout=consts.DEFAULT_TIMEOUT)
     return _ret(r)
 
 
@@ -91,7 +95,7 @@ class _Resume(object):
         headers = self.headers()
         headers['Content-Type'] = 'application/octet-stream'
 
-        r = requests.post(url, data=block, headers=headers, timeout=consts.DEFAULT_TIMEOUT)
+        r = _session.post(url, data=block, headers=headers, timeout=consts.DEFAULT_TIMEOUT)
         ret = _ret(r)
         if ret['crc32'] != crc:
             raise QiniuException(r.status_code, 'unmatch crc checksum', r.headers['X-Reqid'])
@@ -117,7 +121,7 @@ class _Resume(object):
         url = self.makeFileUrl(host)
         body = ','.join([status['ctx'] for status in self.blockStatus])
 
-        r = requests.post(url, data=body, headers=self.headers(), timeout=consts.DEFAULT_TIMEOUT)
+        r = _session.post(url, data=body, headers=self.headers(), timeout=consts.DEFAULT_TIMEOUT)
         return _ret(r)
 
     def headers(self):
