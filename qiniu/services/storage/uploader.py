@@ -71,7 +71,7 @@ class _Resume(object):
         self.blockStatus = [None] * self.blockCount
 
         # todo cactch exception
-        for i in xrange(self.blockCount):
+        for i in range(self.blockCount):
             length = self.calcDataLengh(i)
             dataBlock = self.reader.read(length)
 
