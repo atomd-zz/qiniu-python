@@ -32,6 +32,11 @@ dummySecretKey = '1234567890'
 dummyMac = Auth(dummyAccessKey, dummySecretKey)
 
 
+def randString(length):
+    lib = string.ascii_uppercase
+    return ''.join([random.choice(lib) for i in range(0, length)])
+
+
 class AuthTestCase(unittest.TestCase):
 
     def test_token(self):
@@ -93,15 +98,18 @@ class BucketTestCase(unittest.TestCase):
         assert 612 == ret[0]['code'] and ret[0]['data']['error'] == 'no such file or directory'
 
     def test_move(self):
-        ret = self.bucket.move({'movefrom': 'moveto'})
+        key = 'copyto'+randString(8)
+        self.bucket.copy({'copyfrom': key})
+        ret = self.bucket.move({key: key + 'move'})
         assert ret[0]['code'] == 200
-        ret = self.bucket.move({'moveto': 'movefrom'})
-        assert ret[0]['code'] == 200
+        ret = self.bucket.delete(key + 'move')
+        assert ret == {}
 
     def test_copy(self):
-        ret = self.bucket.copy({'copyfrom': 'copyto'})
+        key = 'copyto'+randString(8)
+        ret = self.bucket.copy({'copyfrom': key})
         assert ret[0]['code'] == 200
-        ret = self.bucket.delete('copyto')
+        ret = self.bucket.delete(key)
         assert ret == {}
 
 
