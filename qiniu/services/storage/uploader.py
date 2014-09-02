@@ -124,7 +124,7 @@ class _Resume(object):
             url.append('key/%s' % base64Encode(self.key))
 
         if self.params:
-            for k, v in self.params.iteritems():
+            for k, v in self.params.items():
                 url.append('%s/%s' % (k, base64Encode(v)))
 
         url = '/'.join(url)
