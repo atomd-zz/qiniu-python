@@ -99,7 +99,7 @@ class Auth(object):
         token = self.token(url)
         return '%s&token=%s' % (url, token)
 
-    def uploadToken(self, bucket, key=None, policy=None, expires=3600):
+    def uploadToken(self, bucket, key=None, policy=None, expires=3600, strictPolicy=True):
         if bucket is None or bucket == '':
             raise ValueError('invalid bucket name')
 
@@ -113,16 +113,16 @@ class Auth(object):
         )
 
         if policy is not None:
-            self.__copyPolicy(policy, args)
+            self.__copyPolicy(policy, args, strictPolicy)
 
         data = json.dumps(args, separators=(',', ':'))
         return self.tokenWithData(data)
 
-    def __copyPolicy(self, policy, to):
+    def __copyPolicy(self, policy, to, strictPolicy):
         for k, v in policy.items():
             if k in _deprecatedPolicyFields:
                 raise DeprecatedApi(k + ' is deprecated')
-            if k in _policyFields:
+            if (not strictPolicy) or k in _policyFields:
                 to[k] = v
 
 
