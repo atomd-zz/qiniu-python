@@ -36,7 +36,7 @@ def put(upToken, key, data, params={}, mimeType='application/octet-stream', crc3
     # todo no key specify
     name = key if key else 'filename'
 
-    r = requests.post(url, data=fields, files={'file': (name, data, mimeType)})
+    r = requests.post(url, data=fields, files={'file': (name, data, mimeType)}, timeout=consts.DEFAULT_TIMEOUT)
     ret = r.json()
     err = None
     return ret, err
@@ -108,7 +108,7 @@ class _Resume(object):
         headers = self.headers()
         headers['Content-Type'] = 'application/octet-stream'
 
-        r = requests.post(url, data=block, headers=headers)
+        r = requests.post(url, data=block, headers=headers, timeout=consts.DEFAULT_TIMEOUT)
         ret = r.json()
         if not ret['crc32'] == crc:
             raise err_unmatched_checksum
@@ -134,7 +134,7 @@ class _Resume(object):
         url = self.makeFileUrl(host)
         body = ','.join([status['ctx'] for status in self.blockStatus])
 
-        r = requests.post(url, data=body, headers=self.headers())
+        r = requests.post(url, data=body, headers=self.headers(), timeout=consts.DEFAULT_TIMEOUT)
         ret = r.json()
         return ret, None
 

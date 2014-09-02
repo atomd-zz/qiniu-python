@@ -38,7 +38,7 @@ class Bucket(object):
 
         url = 'http://%s/list' % consts.RSF_HOST
 
-        r = requests.get(url, params=options, auth=RequestsAuth(self.auth))
+        r = requests.get(url, params=options, auth=RequestsAuth(self.auth), timeout=consts.DEFAULT_TIMEOUT)
         ret = r.json()
         eof = False
         if ret and not ret.get('marker'):
@@ -59,7 +59,7 @@ class Bucket(object):
             url = 'http://%s/batch' % consts.RS_HOST
             params = dict(op=ops)
 
-        r = requests.post(url, data=params, auth=RequestsAuth(self.auth))
+        r = requests.post(url, data=params, auth=RequestsAuth(self.auth), timeout=consts.DEFAULT_TIMEOUT)
         ret = r.json()
         return ret
 
@@ -76,7 +76,7 @@ class Bucket(object):
             url = 'http://%s/batch' % consts.RS_HOST
             params = dict(op=ops)
 
-        r = requests.post(url, data=params, auth=RequestsAuth(self.auth))
+        r = requests.post(url, data=params, auth=RequestsAuth(self.auth), timeout=consts.DEFAULT_TIMEOUT)
 
         ret = r.json() if r.text != '' else {}
         return ret
@@ -88,7 +88,7 @@ class Bucket(object):
             to = _entry(v, targetBucket) if targetBucket else self.__entry(v)
             ops.append("/move/%s/%s" % (self.__entry(k), to))
 
-        r = requests.post(url, data=dict(op=ops), auth=RequestsAuth(self.auth))
+        r = requests.post(url, data=dict(op=ops), auth=RequestsAuth(self.auth), timeout=consts.DEFAULT_TIMEOUT)
         ret = r.json()
         return ret
 
@@ -99,7 +99,7 @@ class Bucket(object):
             to = _entry(v, targetBucket) if targetBucket else self.__entry(v)
             ops.append("/copy/%s/%s" % (self.__entry(k), to))
 
-        r = requests.post(url, data=dict(op=ops), auth=RequestsAuth(self.auth))
+        r = requests.post(url, data=dict(op=ops), auth=RequestsAuth(self.auth), timeout=consts.DEFAULT_TIMEOUT)
         ret = r.json()
         return ret
 
@@ -108,7 +108,7 @@ class Bucket(object):
         resource = base64Encode(url)
         cmd = 'http://%s/fetch/%s/to/%s' % (consts.IO_HOST, resource, to)
 
-        r = requests.post(cmd, auth=RequestsAuth(self.auth))
+        r = requests.post(cmd, auth=RequestsAuth(self.auth), timeout=consts.DEFAULT_TIMEOUT)
         ret = r.json()
         return ret
 
@@ -123,7 +123,7 @@ class Bucket(object):
     def buckets(self):
         url = 'http://%s/buckets' % consts.RS_HOST
 
-        r = requests.post(url, auth=RequestsAuth(self.auth))
+        r = requests.post(url, auth=RequestsAuth(self.auth), timeout=consts.DEFAULT_TIMEOUT)
         ret = r.json()
         return ret
 
