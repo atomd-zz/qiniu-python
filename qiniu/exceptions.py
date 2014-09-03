@@ -9,6 +9,7 @@ class QiniuServiceException(Exception):
         self.description = description
         self.reqId = reqId
 
+
 class QiniuClientException(Exception):
     pass
 
