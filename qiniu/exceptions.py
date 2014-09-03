@@ -1,14 +1,17 @@
 # -*- coding: utf-8 -*-
 
 
-class QiniuException(IOError):
+class QiniuServiceException(Exception):
     """common exception"""
     def __init__(self, statusCode, description, reqId):
-        super(QiniuException, self).__init__()
+        super(QiniuServiceException, self).__init__()
         self.statusCode = statusCode
         self.description = description
         self.reqId = reqId
 
+class QiniuClientException(Exception):
+    pass
 
-class DeprecatedApi(ValueError):
+
+class DeprecatedApi(QiniuClientException):
     """used deprecated api"""

@@ -6,7 +6,7 @@ import requests
 
 from qiniu import consts
 from qiniu.utils import base64Encode, crc32, localFileCrc32, _ret
-from qiniu.exceptions import QiniuException
+from qiniu.exceptions import QiniuServiceException
 
 _session = requests.Session()
 _adapter = requests.adapters.HTTPAdapter(max_retries=3)
@@ -120,7 +120,7 @@ class _Resume(object):
         r = _session.post(url, data=block, headers=headers, timeout=consts.DEFAULT_TIMEOUT)
         ret = _ret(r)
         if ret['crc32'] != crc:
-            raise QiniuException(r.status_code, 'unmatch crc checksum', r.headers['X-Reqid'])
+            raise QiniuServiceException(r.status_code, 'unmatch crc checksum', r.headers['X-Reqid'])
         return ret
 
     def makeFileUrl(self, host):

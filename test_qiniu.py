@@ -7,7 +7,7 @@ import random
 import unittest
 import pytest
 
-from qiniu import Bucket, DeprecatedApi, QiniuException, Auth, put, putFile, resumablePut, resumablePutFile, utils
+from qiniu import Bucket, DeprecatedApi, QiniuServiceException, Auth, put, putFile, resumablePut, resumablePutFile, utils
 
 from requests.compat import is_py2
 
@@ -89,7 +89,7 @@ class BucketTestCase(unittest.TestCase):
         assert 'hash' in ret[0]['data']
 
     def test_delete(self):
-        with pytest.raises(QiniuException):
+        with pytest.raises(QiniuServiceException):
             ret = self.bucket.delete('del')
 
         ret = self.bucket.delete(['del'])
@@ -143,7 +143,7 @@ class UploaderTestCase(unittest.TestCase):
         data = 'hello bubby!'
         crc32 = 'wrong crc32'
         token = self.q.uploadToken(bucketName)
-        with pytest.raises(QiniuException):
+        with pytest.raises(QiniuServiceException):
             _put(token, key, data, None, None, crc32=crc32)
 
     def test_putWithoutKey(self):
@@ -156,7 +156,7 @@ class UploaderTestCase(unittest.TestCase):
         data = 'hello bubby!'
         token = self.q.uploadToken(bucketName, 'nokey2')
 
-        with pytest.raises(QiniuException):
+        with pytest.raises(QiniuServiceException):
             put(token, None, data)
 
 
