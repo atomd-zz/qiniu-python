@@ -7,9 +7,11 @@ import random
 import unittest
 import pytest
 
-from qiniu import Bucket, DeprecatedApi, QiniuException, Auth, put, resumablePut, utils
+from qiniu import Bucket, DeprecatedApi, QiniuException, Auth, put, putFile, resumablePut, resumablePutFile, utils
 
 from requests.compat import is_py2
+
+from qiniu.services.storage.uploader import _put
 
 if is_py2:
     import sys
@@ -118,16 +120,14 @@ class UploaderTestCase(unittest.TestCase):
     def test_put(self):
         key = 'a\\b\\c"你好'
         data = 'hello bubby!'
-        crc32 = utils.crc32(data)
         token = self.q.uploadToken(bucketName)
-        ret = put(token, key, data, crc32=crc32)
+        ret = put(token, key, data)
         assert ret['key'] == key
 
         key = ''
         data = 'hello bubby!'
-        crc32 = utils.crc32(data)
         token = self.q.uploadToken(bucketName, key)
-        ret = put(token, key, data, crc32=crc32)
+        ret = put(token, key, data, checkCrc=True)
         assert ret['key'] == key
 
     def test_putFile(self):
@@ -135,8 +135,7 @@ class UploaderTestCase(unittest.TestCase):
         key = 'test_file'
 
         token = self.q.uploadToken(bucketName, key)
-        crc32 = utils.fileCrc32(localfile)
-        ret = put(token, key, open(localfile, 'rb'), mimeType=self.mimeType, crc32=crc32)
+        ret = putFile(token, key, localfile, mimeType=self.mimeType, checkCrc=True)
         assert ret['key'] == key
 
     def test_putInvalidCrc(self):
@@ -145,7 +144,7 @@ class UploaderTestCase(unittest.TestCase):
         crc32 = 'wrong crc32'
         token = self.q.uploadToken(bucketName)
         with pytest.raises(QiniuException):
-            put(token, key, data, crc32=crc32)
+            _put(token, key, data, None, None, crc32=crc32)
 
     def test_putWithoutKey(self):
         key = None
@@ -172,9 +171,7 @@ class ResumableUploaderTestCase(unittest.TestCase):
         key = 'test_file_r'
 
         token = self.q.uploadToken(bucketName, key)
-        reader = open(localfile, 'rb')
-        size = os.stat(localfile).st_size
-        ret = resumablePut(token, key, reader, size, self.params, self.mimeType)
+        ret = resumablePutFile(token, key, localfile, self.params, self.mimeType)
         assert ret['key'] == key
 
 

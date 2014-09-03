@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 
+import os
+
 import requests
 
 from qiniu import consts
-from qiniu.utils import base64Encode, crc32, _ret
+from qiniu.utils import base64Encode, crc32, localFileCrc32, _ret
 from qiniu.exceptions import QiniuException
 
 _session = requests.Session()
@@ -11,13 +13,26 @@ _adapter = requests.adapters.HTTPAdapter(max_retries=3)
 _session.mount('http://', _adapter)
 
 
-def put(upToken, key, data, params={}, mimeType='application/octet-stream', crc32=None):
+def put(upToken, key, data, params={}, mimeType='application/octet-stream', checkCrc=False):
     ''' put data to Qiniu
     If key is None, the server will generate one.
     data may be str or read()able object.
     '''
-    fields = {}
+    crc = crc32(data) if checkCrc else None
+    return _put(upToken, key, data, params, mimeType, crc)
 
+
+def putFile(upToken, key, filePath, params={}, mimeType='application/octet-stream', checkCrc=False):
+    ''' put data to Qiniu
+    If key is None, the server will generate one.
+    data may be str or read()able object.
+    '''
+    crc = localFileCrc32(filePath) if checkCrc else None
+    return _put(upToken, key, open(filePath, 'rb'), params, mimeType, crc)
+
+
+def _put(upToken, key, data, params, mimeType, crc32):
+    fields = {}
     if params:
         for k, v in params.items():
             fields[k] = str(v)
@@ -42,6 +57,13 @@ def resumablePut(upToken, key, reader, dataSize, params=None, mimeType=None):
     task = _Resume(upToken, key, reader, dataSize, params, mimeType)
     return task.upload()
 
+
+def resumablePutFile(upToken, key, filePath, params=None, mimeType=None):
+    ret = {}
+    with open(filePath, 'rb') as reader:
+        size = os.stat(filePath).st_size
+        ret = resumablePut(upToken, key, reader, size, params, mimeType)
+    return ret
 
 _BLOCK_SIZE = 1024 * 1024 * 4
 
