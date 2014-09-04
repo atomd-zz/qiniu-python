@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from . import __version__
 import platform
-
+from hashlib import sha1
 from base64 import urlsafe_b64encode
-from .exceptions import QiniuServiceException
+
+from .config import _BLOCK_SIZE
 
 try:
     import zlib
@@ -14,6 +14,10 @@ except ImportError:
     import binascii
 
 from requests.compat import is_py2
+
+from .exceptions import QiniuServiceException
+from . import __version__
+
 
 sys_info = "%s; %s" % (platform.system(), platform.machine())
 py_ver = platform.python_version()
@@ -30,8 +34,6 @@ def base64Encode(data):
         if isinstance(data, bytes):
             ret = ret.decode('utf-8')
     return ret
-
-_BLOCK_SIZE = 1024 * 1024 * 4
 
 
 def localFileCrc32(filePath):

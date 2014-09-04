@@ -4,9 +4,10 @@ import os
 
 import requests
 
-from qiniu import consts
+from qiniu import config
 from qiniu.utils import base64Encode, crc32, localFileCrc32, _ret
 from qiniu.exceptions import QiniuServiceException
+
 
 _session = requests.Session()
 _adapter = requests.adapters.HTTPAdapter(max_retries=3)
@@ -45,11 +46,11 @@ def _put(upToken, key, data, params, mimeType, crc32):
 
     fields['token'] = upToken
 
-    url = 'http://' + consts.UP_HOST + '/'
+    url = 'http://' + config.UPDEFAULT_HOST + '/'
 
     name = key if key else 'filename'
 
-    r = _session.post(url, data=fields, files={'file': (name, data, mimeType)}, timeout=consts.DEFAULT_TIMEOUT)
+    r = _session.post(url, data=fields, files={'file': (name, data, mimeType)}, timeout=config.CONNECTION_TIMEOUT)
     return _ret(r)
 
 
@@ -64,8 +65,6 @@ def resumablePutFile(upToken, key, filePath, params=None, mimeType=None):
         size = os.stat(filePath).st_size
         ret = resumablePut(upToken, key, reader, size, params, mimeType)
     return ret
-
-_BLOCK_SIZE = 1024 * 1024 * 4
 
 
 class _Resume(object):
@@ -90,7 +89,7 @@ class _Resume(object):
 
             self.resumableBlockPut(self.upToken, dataBlock, length,  i)
 
-        return self.makeFile(consts.UP_HOST)
+        return self.makeFile(config.UPDEFAULT_HOST)
 
     def resumableBlockPut(self, upToken, block, length, index):
         if self.blockStatus[index] and 'ctx' in self.blockStatus[index]:
@@ -101,23 +100,23 @@ class _Resume(object):
         return
 
     def count(self):
-        return (self.size + _BLOCK_SIZE - 1) // _BLOCK_SIZE
+        return (self.size + config._BLOCK_SIZE - 1) // config._BLOCK_SIZE
 
     def calcDataLengh(self, index):
-        need = _BLOCK_SIZE
-        if (index + 1) * _BLOCK_SIZE > self.size:
-            need = self.size - index * _BLOCK_SIZE
+        need = config._BLOCK_SIZE
+        if (index + 1) * config._BLOCK_SIZE > self.size:
+            need = self.size - index * config._BLOCK_SIZE
         return need
 
     def makeBlock(self, block, blockSize):
         crc = crc32(block)
         block = bytearray(block)
-        url = 'http://%s/mkblk/%s' % (consts.UP_HOST, blockSize)
+        url = 'http://%s/mkblk/%s' % (config.UPDEFAULT_HOST, blockSize)
 
         headers = self.headers()
         headers['Content-Type'] = 'application/octet-stream'
 
-        r = _session.post(url, data=block, headers=headers, timeout=consts.DEFAULT_TIMEOUT)
+        r = _session.post(url, data=block, headers=headers, timeout=config.CONNECTION_TIMEOUT)
         ret = _ret(r)
         if ret['crc32'] != crc:
             raise QiniuServiceException(r.status_code, 'unmatch crc checksum', r.headers['X-Reqid'])
@@ -143,7 +142,7 @@ class _Resume(object):
         url = self.makeFileUrl(host)
         body = ','.join([status['ctx'] for status in self.blockStatus])
 
-        r = _session.post(url, data=body, headers=self.headers(), timeout=consts.DEFAULT_TIMEOUT)
+        r = _session.post(url, data=body, headers=self.headers(), timeout=config.CONNECTION_TIMEOUT)
         return _ret(r)
 
     def headers(self):
