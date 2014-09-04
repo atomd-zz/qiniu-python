@@ -10,11 +10,14 @@ from qiniu.exceptions import QiniuServiceException
 
 
 _session = requests.Session()
-_adapter = requests.adapters.HTTPAdapter(max_retries=3)
+_adapter = requests.adapters.HTTPAdapter(
+    pool_connections=config.CONNECTION_POOL, pool_maxsize=config.CONNECTION_POOL,
+    max_retries=config.CONNECTION_RETRIES)
 _session.mount('http://', _adapter)
 
 
-def put(upToken, key, data, params={}, mimeType='application/octet-stream', checkCrc=False):
+def put(
+        upToken, key, data, params={}, mimeType='application/octet-stream', checkCrc=False):
     ''' put data to Qiniu
     If key is None, the server will generate one.
     data may be str or read()able object.
@@ -23,7 +26,8 @@ def put(upToken, key, data, params={}, mimeType='application/octet-stream', chec
     return _put(upToken, key, data, params, mimeType, crc)
 
 
-def putFile(upToken, key, filePath, params={}, mimeType='application/octet-stream', checkCrc=False):
+def putFile(
+        upToken, key, filePath, params={}, mimeType='application/octet-stream', checkCrc=False):
     ''' put data to Qiniu
     If key is None, the server will generate one.
     data may be str or read()able object.
@@ -50,7 +54,9 @@ def _put(upToken, key, data, params, mimeType, crc32):
 
     name = key if key else 'filename'
 
-    r = _session.post(url, data=fields, files={'file': (name, data, mimeType)}, timeout=config.CONNECTION_TIMEOUT)
+    r = _session.post(
+        url, data=fields, files={'file': (name, data, mimeType)},
+        timeout=config.CONNECTION_TIMEOUT)
     return _ret(r)
 
 
@@ -119,7 +125,8 @@ class _Resume(object):
         r = _session.post(url, data=block, headers=headers, timeout=config.CONNECTION_TIMEOUT)
         ret = _ret(r)
         if ret['crc32'] != crc:
-            raise QiniuServiceException(r.status_code, 'unmatch crc checksum', r.headers['X-Reqid'])
+            raise QiniuServiceException(
+                r.status_code, 'unmatch crc checksum', r.headers['X-Reqid'])
         return ret
 
     def makeFileUrl(self, host):
@@ -142,7 +149,8 @@ class _Resume(object):
         url = self.makeFileUrl(host)
         body = ','.join([status['ctx'] for status in self.blockStatus])
 
-        r = _session.post(url, data=body, headers=self.headers(), timeout=config.CONNECTION_TIMEOUT)
+        r = _session.post(
+            url, data=body, headers=self.headers(), timeout=config.CONNECTION_TIMEOUT)
         return _ret(r)
 
     def headers(self):
