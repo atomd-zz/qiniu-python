@@ -39,7 +39,7 @@ class Bucket(object):
         url = 'http://%s/list' % config.RSF_HOST
 
         r = requests.get(
-            url, params=options, auth=RequestsAuth(self.auth), timeout=config.CONNECTION_TIMEOUT)
+            url, params=options, auth=RequestsAuth(self.auth), timeout=config._connectionTimeout)
         ret = _ret(r)
 
         eof = False
@@ -63,7 +63,7 @@ class Bucket(object):
             params = dict(op=ops)
 
         r = requests.post(
-            url, data=params, auth=RequestsAuth(self.auth), timeout=config.CONNECTION_TIMEOUT)
+            url, data=params, auth=RequestsAuth(self.auth), timeout=config._connectionTimeout)
         return _ret(r)
 
     def delete(self, keys):
@@ -80,7 +80,7 @@ class Bucket(object):
             params = dict(op=ops)
 
         r = requests.post(
-            url, data=params, auth=RequestsAuth(self.auth), timeout=config.CONNECTION_TIMEOUT)
+            url, data=params, auth=RequestsAuth(self.auth), timeout=config._connectionTimeout)
         return _ret(r)
 
     def move(self, keyPairs, targetBucket=None):
@@ -91,7 +91,7 @@ class Bucket(object):
             ops.append("/move/%s/%s" % (self.__entry(k), to))
 
         r = requests.post(
-            url, data=dict(op=ops), auth=RequestsAuth(self.auth), timeout=config.CONNECTION_TIMEOUT)
+            url, data=dict(op=ops), auth=RequestsAuth(self.auth), timeout=config._connectionTimeout)
         return _ret(r)
 
     def copy(self, keyPairs, targetBucket=None):
@@ -102,7 +102,7 @@ class Bucket(object):
             ops.append("/copy/%s/%s" % (self.__entry(k), to))
 
         r = requests.post(
-            url, data=dict(op=ops), auth=RequestsAuth(self.auth), timeout=config.CONNECTION_TIMEOUT)
+            url, data=dict(op=ops), auth=RequestsAuth(self.auth), timeout=config._connectionTimeout)
         return _ret(r)
 
     def fetch(self, url, key):
@@ -111,7 +111,7 @@ class Bucket(object):
         cmd = 'http://%s/fetch/%s/to/%s' % (config.IO_HOST, resource, to)
 
         r = requests.post(
-            cmd, auth=RequestsAuth(self.auth), timeout=config.CONNECTION_TIMEOUT)
+            cmd, auth=RequestsAuth(self.auth), timeout=config._connectionTimeout)
         return _ret(r)
 
     def prefetch(self, key):
@@ -124,7 +124,7 @@ class Bucket(object):
     def buckets(self):
         url = 'http://%s/buckets' % config.RS_HOST
 
-        r = requests.post(url, auth=RequestsAuth(self.auth), timeout=config.CONNECTION_TIMEOUT)
+        r = requests.post(url, auth=RequestsAuth(self.auth), timeout=config._connectionTimeout)
         return _ret(r)
 
     def __entry(self, key):

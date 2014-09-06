@@ -7,7 +7,7 @@ import random
 import unittest
 import pytest
 
-from qiniu import Bucket, DeprecatedApi, QiniuServiceException, Auth, put, putFile, resumablePut, resumablePutFile, utils
+from qiniu import Bucket, DeprecatedApi, QiniuServiceException, Auth, put, putFile, resumablePut, resumablePutFile
 
 from requests.compat import is_py2
 

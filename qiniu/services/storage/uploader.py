@@ -11,8 +11,8 @@ from qiniu.exceptions import QiniuServiceException
 
 _session = requests.Session()
 _adapter = requests.adapters.HTTPAdapter(
-    pool_connections=config.CONNECTION_POOL, pool_maxsize=config.CONNECTION_POOL,
-    max_retries=config.CONNECTION_RETRIES)
+    pool_connections=config._connectionPool, pool_maxsize=config._connectionPool,
+    max_retries=config._connectionRetries)
 _session.mount('http://', _adapter)
 
 
@@ -50,13 +50,13 @@ def _put(upToken, key, data, params, mimeType, crc32):
 
     fields['token'] = upToken
 
-    url = 'http://' + config.UPDEFAULT_HOST + '/'
+    url = 'http://' + config._defaultUpHost + '/'
 
     name = key if key else 'filename'
 
     r = _session.post(
         url, data=fields, files={'file': (name, data, mimeType)},
-        timeout=config.CONNECTION_TIMEOUT)
+        timeout=config._connectionTimeout)
     return _ret(r)
 
 
@@ -95,7 +95,7 @@ class _Resume(object):
 
             self.resumableBlockPut(self.upToken, dataBlock, length,  i)
 
-        return self.makeFile(config.UPDEFAULT_HOST)
+        return self.makeFile(config._defaultUpHost)
 
     def resumableBlockPut(self, upToken, block, length, index):
         if self.blockStatus[index] and 'ctx' in self.blockStatus[index]:
@@ -117,12 +117,12 @@ class _Resume(object):
     def makeBlock(self, block, blockSize):
         crc = crc32(block)
         block = bytearray(block)
-        url = 'http://%s/mkblk/%s' % (config.UPDEFAULT_HOST, blockSize)
+        url = 'http://%s/mkblk/%s' % (config._defaultUpHost, blockSize)
 
         headers = self.headers()
         headers['Content-Type'] = 'application/octet-stream'
 
-        r = _session.post(url, data=block, headers=headers, timeout=config.CONNECTION_TIMEOUT)
+        r = _session.post(url, data=block, headers=headers, timeout=config._connectionTimeout)
         ret = _ret(r)
         if ret['crc32'] != crc:
             raise QiniuServiceException(
@@ -150,7 +150,7 @@ class _Resume(object):
         body = ','.join([status['ctx'] for status in self.blockStatus])
 
         r = _session.post(
-            url, data=body, headers=self.headers(), timeout=config.CONNECTION_TIMEOUT)
+            url, data=body, headers=self.headers(), timeout=config._connectionTimeout)
         return _ret(r)
 
     def headers(self):

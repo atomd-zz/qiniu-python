@@ -9,10 +9,22 @@ UPDX_HOST = 'updx.qiniu.com'
 UPLT_HOST = 'uplt.qiniu.com'
 UPBACKUP_HOST = 'upload.qiniu.com'
 
-UPDEFAULT_HOST = UPAUTO_HOST
+_defaultUpHost = UPAUTO_HOST
 
-CONNECTION_TIMEOUT = 30
-CONNECTION_RETRIES = 3
-CONNECTION_POOL = 10
+_connectionTimeout = 30
+_connectionRetries = 3
+_connectionPool = 10
 
 _BLOCK_SIZE = 1024 * 1024 * 4
+
+
+def setDefault(
+        defaultUpHost=None, connectionRetries=None, connectionPool=None, connectionTimeout=None):
+    if defaultUpHost:
+        _defaultUpHost = defaultUpHost
+    if connectionRetries:
+        _connectionRetries = connectionRetries
+    if connectionPool:
+        _connectionPool = connectionPool
+    if connectionTimeout:
+        _connectionTimeout = connectionTimeout
