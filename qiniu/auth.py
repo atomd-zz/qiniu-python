@@ -121,7 +121,7 @@ class Auth(object):
     def __copyPolicy(self, policy, to, strictPolicy):
         for k, v in policy.items():
             if k in _deprecatedPolicyFields:
-                raise DeprecatedApi(k + ' is deprecated')
+                raise DeprecatedApi(k)
             if (not strictPolicy) or k in _policyFields:
                 to[k] = v
 

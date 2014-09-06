@@ -6,7 +6,8 @@ import requests
 
 from qiniu import config
 from qiniu.utils import base64Encode, crc32, localFileCrc32, _ret
-from qiniu.exceptions import QiniuServiceException
+from qiniu.exceptions import QiniuServiceException, QiniuClientException
+
 
 
 _session = requests.Session()
@@ -14,6 +15,13 @@ _adapter = requests.adapters.HTTPAdapter(
     pool_connections=config._connectionPool, pool_maxsize=config._connectionPool,
     max_retries=config._connectionRetries)
 _session.mount('http://', _adapter)
+
+
+def _needRetry(response, exception):
+    code = response.status_code
+    if exception is None or code / 100 == 4 or code == 579 or code / 100 == 6 or code / 100 == 7:
+        return False
+    return True
 
 
 def put(
@@ -33,10 +41,11 @@ def putFile(
     data may be str or read()able object.
     '''
     crc = localFileCrc32(filePath) if checkCrc else None
-    return _put(upToken, key, open(filePath, 'rb'), params, mimeType, crc)
+    with open(filePath, 'rb') as reader:
+            return _put(upToken, key, reader, params, mimeType, crc)
 
 
-def _put(upToken, key, data, params, mimeType, crc32):
+def _put(upToken, key, data, params, mimeType, crc32, filePath=None):
     fields = {}
     if params:
         for k, v in params.items():
@@ -54,9 +63,29 @@ def _put(upToken, key, data, params, mimeType, crc32):
 
     name = key if key else 'filename'
 
-    r = _session.post(
-        url, data=fields, files={'file': (name, data, mimeType)},
-        timeout=config._connectionTimeout)
+    r = None
+    exception = None
+    try:
+        r = _session.post(
+            url, data=fields, files={'file': (name, data, mimeType)},
+            timeout=config._connectionTimeout)
+    except Exception as e:
+        exception = e
+    finally:
+        retry = _needRetry(r, exception)
+
+    if retry:
+        url = 'http://' + config.UPBACKUP_HOST + '/'
+        if filePath:
+            data = open(filePath, 'rb')
+        try:
+            r = _session.post(
+                url, data=fields, files={'file': (name, data, mimeType)},
+
+                timeout=config._connectionTimeout)
+        except Exception as e:
+            raise QiniuClientException(str(e))
+
     return _ret(r)
 
 
@@ -95,7 +124,7 @@ class _Resume(object):
 
             self.resumableBlockPut(self.upToken, dataBlock, length,  i)
 
-        return self.makeFile(config._defaultUpHost)
+        return self.makeFile()
 
     def resumableBlockPut(self, upToken, block, length, index):
         if self.blockStatus[index] and 'ctx' in self.blockStatus[index]:
@@ -117,17 +146,34 @@ class _Resume(object):
     def makeBlock(self, block, blockSize):
         crc = crc32(block)
         block = bytearray(block)
-        url = 'http://%s/mkblk/%s' % (config._defaultUpHost, blockSize)
-
+        url = self.blockUrl(config._defaultUpHost, blockSize)
         headers = self.headers()
         headers['Content-Type'] = 'application/octet-stream'
 
-        r = _session.post(url, data=block, headers=headers, timeout=config._connectionTimeout)
+        r = None
+        exception = None
+        try:
+            r = _session.post(url, data=block, headers=headers, timeout=config._connectionTimeout)
+        except Exception as e:
+            exception = e
+        finally:
+            retry = _needRetry(r, exception)
+
+        if retry:
+            url = self.blockUrl(config.UPBACKUP_HOST, blockSize)
+            try:
+                r = _session.post(url, data=block, headers=headers, timeout=config._connectionTimeout)
+            except Exception as e:
+                raise QiniuClientException(str(e))
+
         ret = _ret(r)
         if ret['crc32'] != crc:
             raise QiniuServiceException(
                 r.status_code, 'unmatch crc checksum', r.headers['X-Reqid'])
         return ret
+
+    def blockUrl(self, host, size):
+        return 'http://%s/mkblk/%s' % (host, size)
 
     def makeFileUrl(self, host):
         url = ['http://%s/mkfile/%s' % (host, self.size)]
@@ -145,9 +191,27 @@ class _Resume(object):
         url = '/'.join(url)
         return url
 
-    def makeFile(self, host):
-        url = self.makeFileUrl(host)
+    def makeFile(self):
+        url = self.makeFileUrl(config._defaultUpHost)
         body = ','.join([status['ctx'] for status in self.blockStatus])
+
+        r = None
+        exception = None
+        try:
+            r = _session.post(
+                url, data=body, headers=self.headers(), timeout=config._connectionTimeout)
+        except Exception as e:
+            exception = e
+        finally:
+            retry = _needRetry(r, exception)
+
+        if retry:
+            url = self.makeFileUrl(config._defaultUpHost)
+            try:
+                r = _session.post(
+                    url, data=body, headers=self.headers(), timeout=config._connectionTimeout)
+            except Exception as e:
+                raise QiniuClientException(str(e))
 
         r = _session.post(
             url, data=body, headers=self.headers(), timeout=config._connectionTimeout)

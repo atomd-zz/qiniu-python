@@ -11,8 +11,12 @@ class QiniuServiceException(Exception):
 
 
 class QiniuClientException(Exception):
-    pass
+    def __init__(self, message):
+        self.message = message
+        super(QiniuClientException, self).__init__(message)
 
 
 class DeprecatedApi(QiniuClientException):
-    """used deprecated api"""
+    def __init__(self, api):
+        self.message = api + ' has deprecated'
+        super(QiniuClientException, self).__init__(self.message)
