@@ -174,20 +174,20 @@ class _Resume(object):
         return ret
 
     def blockUrl(self, host, size):
-        return 'http://%s/mkblk/%s' % (host, size)
+        return 'http://%s/mkblk/%s'.format(host, size)
 
     def makeFileUrl(self, host):
-        url = ['http://%s/mkfile/%s' % (host, self.size)]
+        url = ['http://%s/mkfile/%s'.format(host, self.size)]
 
         if self.mimeType:
-            url.append('mimeType/%s' % base64Encode(self.mimeType))
+            url.append('mimeType/%s'.format(base64Encode(self.mimeType)))
 
         if self.key is not None:
-            url.append('key/%s' % base64Encode(self.key))
+            url.append('key/%s'.format(base64Encode(self.key)))
 
         if self.params:
             for k, v in self.params.items():
-                url.append('%s/%s' % (k, base64Encode(v)))
+                url.append('%s/%s'.format(k, base64Encode(v)))
 
         url = '/'.join(url)
         return url
@@ -219,4 +219,4 @@ class _Resume(object):
         return _ret(r)
 
     def headers(self):
-        return {'Authorization': 'UpToken %s' % self.upToken}
+        return {'Authorization': 'UpToken %s'.format(self.upToken)}
