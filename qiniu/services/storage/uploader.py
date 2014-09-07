@@ -9,7 +9,6 @@ from qiniu.utils import base64Encode, crc32, localFileCrc32, _ret
 from qiniu.exceptions import QiniuServiceException, QiniuClientException
 
 
-
 _session = requests.Session()
 _adapter = requests.adapters.HTTPAdapter(
     pool_connections=config._connectionPool, pool_maxsize=config._connectionPool,
@@ -18,6 +17,8 @@ _session.mount('http://', _adapter)
 
 
 def _needRetry(response, exception):
+    if response is None:
+        return True
     code = response.status_code
     if exception is None or code / 100 == 4 or code == 579 or code / 100 == 6 or code / 100 == 7:
         return False
@@ -96,8 +97,8 @@ def resumablePut(upToken, key, reader, dataSize, params=None, mimeType=None):
 
 def resumablePutFile(upToken, key, filePath, params=None, mimeType=None):
     ret = {}
+    size = os.stat(filePath).st_size
     with open(filePath, 'rb') as reader:
-        size = os.stat(filePath).st_size
         ret = resumablePut(upToken, key, reader, size, params, mimeType)
     return ret
 

@@ -1,5 +1,7 @@
+#! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import os
 import platform
 from hashlib import sha1
 from base64 import urlsafe_b64encode
@@ -61,5 +63,19 @@ def _ret(req):
     return ret
 
 
-def etag(filepath):
-    pass
+def etag(filePath):
+    size = os.stat(filePath).st_size
+    if size == 0:
+        return ''
+
+
+# if __name__ == '__main__':
+#     if len(argv) < 2:
+#         print usage
+
+    # filePath = open(argv)
+    # if argv[0] == 'crc'
+    #     print localFileCrc32(filePath)
+    # if argv[1] == 'etag'
+    #     print etag(filePath)
+    # print usage
