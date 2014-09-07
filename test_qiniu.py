@@ -7,11 +7,13 @@ import random
 import unittest
 import pytest
 
-from qiniu import Bucket, DeprecatedApi, QiniuServiceException, Auth, put, putFile, resumablePut, resumablePutFile
+from qiniu import Bucket, DeprecatedApi, QiniuServiceException, Auth, put, putFile, resumablePut, resumablePutFile, setDefault
 
 from requests.compat import is_py2
 
 from qiniu.services.storage.uploader import _put
+
+import qiniu.config
 
 if is_py2:
     import sys
@@ -159,6 +161,15 @@ class UploaderTestCase(unittest.TestCase):
         with pytest.raises(QiniuServiceException):
             put(token, None, data)
 
+    def test_retry(self):
+        key = 'retry'
+        data = 'hello retry!'
+        setDefault(defaultUpHost='a')
+        token = self.q.uploadToken(bucketName)
+        ret = put(token, key, data)
+        assert ret['key'] == key
+        qiniu.setDefault(defaultUpHost=qiniu.config.UPAUTO_HOST)
+
 
 class ResumableUploaderTestCase(unittest.TestCase):
 
@@ -173,6 +184,15 @@ class ResumableUploaderTestCase(unittest.TestCase):
         token = self.q.uploadToken(bucketName, key)
         ret = resumablePutFile(token, key, localfile, self.params, self.mimeType)
         assert ret['key'] == key
+
+    def test_retry(self):
+        localfile = __file__
+        key = 'test_file_r_retry'
+        setDefault(defaultUpHost='a')
+        token = self.q.uploadToken(bucketName, key)
+        ret = resumablePutFile(token, key, localfile, self.params, self.mimeType)
+        assert ret['key'] == key
+        qiniu.setDefault(defaultUpHost=qiniu.config.UPAUTO_HOST)
 
 
 if __name__ == '__main__':

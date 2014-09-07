@@ -11,13 +11,13 @@ from qiniu.exceptions import QiniuServiceException, QiniuClientException
 
 _session = requests.Session()
 _adapter = requests.adapters.HTTPAdapter(
-    pool_connections=config._connectionPool, pool_maxsize=config._connectionPool,
-    max_retries=config._connectionRetries)
+    pool_connections=config.getDefault('connectionPool'), pool_maxsize=config.getDefault('connectionPool'),
+    max_retries=config.getDefault('connectionRetries'))
 _session.mount('http://', _adapter)
 
 
 def _post(url, data=None, files=None, headers=None):
-    return _session.post(url, data=data, files=files, headers=headers, timeout=config._connectionTimeout)
+    return _session.post(url, data=data, files=files, headers=headers, timeout=config.getDefault('connectionTimeout'))
 
 
 def _needRetry(response, exception):
@@ -64,7 +64,7 @@ def _put(upToken, key, data, params, mimeType, crc32, filePath=None):
 
     fields['token'] = upToken
 
-    url = 'http://' + config._defaultUpHost + '/'
+    url = 'http://' + config.getDefault('defaultUpHost') + '/'
 
     name = key if key else 'filename'
 
@@ -145,7 +145,7 @@ class _Resume(object):
     def makeBlock(self, block, blockSize):
         crc = crc32(block)
         block = bytearray(block)
-        url = self.blockUrl(config._defaultUpHost, blockSize)
+        url = self.blockUrl(config.getDefault('defaultUpHost'), blockSize)
 
         r = None
         exception = None
@@ -189,7 +189,7 @@ class _Resume(object):
         return url
 
     def makeFile(self):
-        url = self.makeFileUrl(config._defaultUpHost)
+        url = self.makeFileUrl(config.getDefault('defaultUpHost'))
         body = ','.join([status['ctx'] for status in self.blockStatus])
 
         r = None
@@ -202,7 +202,7 @@ class _Resume(object):
             retry = _needRetry(r, exception)
 
         if retry:
-            url = self.makeFileUrl(config._defaultUpHost)
+            url = self.makeFileUrl(config.UPBACKUP_HOST)
             try:
                 r = self.post(url, body)
             except Exception as e:

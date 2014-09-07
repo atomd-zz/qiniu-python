@@ -123,10 +123,10 @@ class Bucket(object):
         return _entry(self.bucket, key)
 
     def __post(self, url, data=None):
-        return requests.post(url, data=data, auth=RequestsAuth(self.auth), timeout=config._connectionTimeout)
+        return requests.post(url, data=data, auth=RequestsAuth(self.auth), timeout=config.getDefault('connectionTimeout'))
 
     def __get(self, url, params=None):
-        return requests.get(url, params=params, auth=RequestsAuth(self.auth), timeout=config._connectionTimeout)
+        return requests.get(url, params=params, auth=RequestsAuth(self.auth), timeout=config.getDefault('connectionTimeout'))
 
 
 def _entry(bucket, key):
