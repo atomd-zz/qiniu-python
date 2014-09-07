@@ -38,8 +38,7 @@ class Bucket(object):
 
         url = 'http://%s/list'.format(config.RSF_HOST)
 
-        r = requests.get(
-            url, params=options, auth=RequestsAuth(self.auth), timeout=config._connectionTimeout)
+        r = self.__get(url, options)
         ret = _ret(r)
 
         eof = False
@@ -62,8 +61,7 @@ class Bucket(object):
             url = 'http://%s/batch'.format(config.RS_HOST)
             params = dict(op=ops)
 
-        r = requests.post(
-            url, data=params, auth=RequestsAuth(self.auth), timeout=config._connectionTimeout)
+        r = self.__post(url, params)
         return _ret(r)
 
     def delete(self, keys):
@@ -79,8 +77,7 @@ class Bucket(object):
             url = 'http://%s/batch'.format(config.RS_HOST)
             params = dict(op=ops)
 
-        r = requests.post(
-            url, data=params, auth=RequestsAuth(self.auth), timeout=config._connectionTimeout)
+        r = self.__post(url, params)
         return _ret(r)
 
     def move(self, keyPairs, targetBucket=None):
@@ -90,8 +87,7 @@ class Bucket(object):
             to = _entry(v, targetBucket) if targetBucket else self.__entry(v)
             ops.append("/move/%s/%s".format(self.__entry(k), to))
 
-        r = requests.post(
-            url, data=dict(op=ops), auth=RequestsAuth(self.auth), timeout=config._connectionTimeout)
+        r = self.__post(url, dict(op=ops))
         return _ret(r)
 
     def copy(self, keyPairs, targetBucket=None):
@@ -101,34 +97,35 @@ class Bucket(object):
             to = _entry(v, targetBucket) if targetBucket else self.__entry(v)
             ops.append("/copy/%s/%s".format(self.__entry(k), to))
 
-        r = requests.post(
-            url, data=dict(op=ops), auth=RequestsAuth(self.auth), timeout=config._connectionTimeout)
+        r = self.__post(url, dict(op=ops))
         return _ret(r)
 
     def fetch(self, url, key):
         to = self.__entry(key)
         resource = base64Encode(url)
         cmd = 'http://%s/fetch/%s/to/%s'.format(config.IO_HOST, resource, to)
-
-        r = requests.post(
-            cmd, auth=RequestsAuth(self.auth), timeout=config._connectionTimeout)
+        r = self.__post(cmd)
         return _ret(r)
 
     def prefetch(self, key):
         resource = self.__entry(key)
         url = 'http://%s/prefetch/%s'.format(config.IO_HOST, resource)
-
-        r = requests.post(url, auth=RequestsAuth(self.auth))
+        r = self.__post(url)
         return _ret(r)
 
     def buckets(self):
         url = 'http://%s/buckets'.format(config.RS_HOST)
-
-        r = requests.post(url, auth=RequestsAuth(self.auth), timeout=config._connectionTimeout)
+        r = self.__post(url)
         return _ret(r)
 
     def __entry(self, key):
         return _entry(self.bucket, key)
+
+    def __post(url, data=None):
+        return requests.post(url, data=data, auth=RequestsAuth(self.auth), timeout=config._connectionTimeout)
+
+    def __get(url, params=None):
+        return requests.get(url, params=params, auth=RequestsAuth(self.auth), timeout=config._connectionTimeout)
 
 
 def _entry(bucket, key):

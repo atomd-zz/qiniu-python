@@ -16,6 +16,10 @@ _adapter = requests.adapters.HTTPAdapter(
 _session.mount('http://', _adapter)
 
 
+def _post(url, data=None, files=None, headers=None):
+    return _session.post(url, data=data, files=files, headers=headers, timeout=config._connectionTimeout)
+
+
 def _needRetry(response, exception):
     if response is None:
         return True
@@ -67,9 +71,7 @@ def _put(upToken, key, data, params, mimeType, crc32, filePath=None):
     r = None
     exception = None
     try:
-        r = _session.post(
-            url, data=fields, files={'file': (name, data, mimeType)},
-            timeout=config._connectionTimeout)
+        r = _post(url, data=fields, files={'file': (name, data, mimeType)})
     except Exception as e:
         exception = e
     finally:
@@ -80,10 +82,7 @@ def _put(upToken, key, data, params, mimeType, crc32, filePath=None):
         if filePath:
             data.seek(0)
         try:
-            r = _session.post(
-                url, data=fields, files={'file': (name, data, mimeType)},
-
-                timeout=config._connectionTimeout)
+            r = _post(url, data=fields, files={'file': (name, data, mimeType)})
         except Exception as e:
             raise QiniuClientException(str(e))
 
@@ -112,7 +111,6 @@ class _Resume(object):
         self.size = dataSize
         self.params = params
         self.mimeType = mimeType
-        # self.notify = notify
 
     def upload(self):
         self.blockCount = self.count()
@@ -148,13 +146,11 @@ class _Resume(object):
         crc = crc32(block)
         block = bytearray(block)
         url = self.blockUrl(config._defaultUpHost, blockSize)
-        headers = self.headers()
-        headers['Content-Type'] = 'application/octet-stream'
 
         r = None
         exception = None
         try:
-            r = _session.post(url, data=block, headers=headers, timeout=config._connectionTimeout)
+            r = self.post(url, block)
         except Exception as e:
             exception = e
         finally:
@@ -163,7 +159,7 @@ class _Resume(object):
         if retry:
             url = self.blockUrl(config.UPBACKUP_HOST, blockSize)
             try:
-                r = _session.post(url, data=block, headers=headers, timeout=config._connectionTimeout)
+                r = self.post(url, block)
             except Exception as e:
                 raise QiniuClientException(str(e))
 
@@ -199,8 +195,7 @@ class _Resume(object):
         r = None
         exception = None
         try:
-            r = _session.post(
-                url, data=body, headers=self.headers(), timeout=config._connectionTimeout)
+            r = self.post(url, body)
         except Exception as e:
             exception = e
         finally:
@@ -209,14 +204,14 @@ class _Resume(object):
         if retry:
             url = self.makeFileUrl(config._defaultUpHost)
             try:
-                r = _session.post(
-                    url, data=body, headers=self.headers(), timeout=config._connectionTimeout)
+                r = self.post(url, body)
             except Exception as e:
                 raise QiniuClientException(str(e))
 
-        r = _session.post(
-            url, data=body, headers=self.headers(), timeout=config._connectionTimeout)
         return _ret(r)
 
     def headers(self):
         return {'Authorization': 'UpToken %s'.format(self.upToken)}
+
+    def post(self, url, data):
+        return _post(url, data=data, headers=self.headers())

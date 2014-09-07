@@ -67,15 +67,3 @@ def etag(filePath):
     size = os.stat(filePath).st_size
     if size == 0:
         return ''
-
-
-# if __name__ == '__main__':
-#     if len(argv) < 2:
-#         print usage
-
-    # filePath = open(argv)
-    # if argv[0] == 'crc'
-    #     print localFileCrc32(filePath)
-    # if argv[1] == 'etag'
-    #     print etag(filePath)
-    # print usage
