@@ -26,7 +26,7 @@ def _needRetry(response, exception):
 
 
 def put(
-        upToken, key, data, params={}, mimeType='application/octet-stream', checkCrc=False):
+        upToken, key, data, params=None, mimeType='application/octet-stream', checkCrc=False):
     ''' put data to Qiniu
     If key is None, the server will generate one.
     data may be str or read()able object.
@@ -36,7 +36,7 @@ def put(
 
 
 def putFile(
-        upToken, key, filePath, params={}, mimeType='application/octet-stream', checkCrc=False):
+        upToken, key, filePath, params=None, mimeType='application/octet-stream', checkCrc=False):
     ''' put data to Qiniu
     If key is None, the server will generate one.
     data may be str or read()able object.
