@@ -21,10 +21,10 @@ from .exceptions import QiniuServiceException
 from . import __version__
 
 
-sys_info = '%s; %s'.format(platform.system(), platform.machine())
+sys_info = '{}; {}'.format(platform.system(), platform.machine())
 py_ver = platform.python_version()
 
-USER_AGENT = 'QiniuPython/%s (%s; ) Python/%s'.format(__version__, sys_info, py_ver)
+USER_AGENT = 'QiniuPython/{} ({}; ) Python/{}'.format(__version__, sys_info, py_ver)
 
 
 def base64Encode(data):

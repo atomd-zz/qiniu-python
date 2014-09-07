@@ -56,11 +56,11 @@ class Auth(object):
         return base64Encode(hashed.digest())
 
     def token(self, data):
-        return '%s:%s'.format(self.__accessKey, self.__token(data))
+        return '{}:{}'.format(self.__accessKey, self.__token(data))
 
     def tokenWithData(self, data):
         data = base64Encode(data)
-        return '%s:%s:%s'.format(self.__accessKey, self.__token(data), data)
+        return '{}:{}:{}'.format(self.__accessKey, self.__token(data), data)
 
     def tokenOfRequest(self, url, body=None, contentType=None):
         parsedUrl = urlparse(url)
@@ -78,7 +78,7 @@ class Auth(object):
             if contentType in mimes:
                 data += body
 
-        return '%s:%s'.format(self.__accessKey, self.__token(data))
+        return '{}:{}'.format(self.__accessKey, self.__token(data))
 
     def __checkKey(self, accessKey, secretKey):
         if not (accessKey and secretKey):
@@ -94,10 +94,10 @@ class Auth(object):
             url += '&'
         else:
             url += '?'
-        url = '%se=%s'.format(url, str(deadline))
+        url = '{}e={}'.format(url, str(deadline))
 
         token = self.token(url)
-        return '%s&token=%s'.format(url, token)
+        return '{}&token={}'.format(url, token)
 
     def uploadToken(self, bucket, key=None, policy=None, expires=3600, strictPolicy=True):
         if bucket is None or bucket == '':
@@ -105,7 +105,7 @@ class Auth(object):
 
         scope = bucket
         if key is not None:
-            scope = '%s:%s'.format(bucket, key)
+            scope = '{}:{}'.format(bucket, key)
 
         args = dict(
             scope=scope,
@@ -136,5 +136,5 @@ class RequestsAuth(AuthBase):
             token = self.auth.tokenOfRequest(r.url, r.body, 'application/x-www-form-urlencoded')
         else:
             token = self.auth.tokenOfRequest(r.url)
-        r.headers['Authorization'] = 'QBox %s'.format(token)
+        r.headers['Authorization'] = 'QBox {}'.format(token)
         return r
