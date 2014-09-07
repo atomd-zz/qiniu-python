@@ -8,27 +8,17 @@ except ImportError:
     setuptools = None
     from distutils.core import setup
 
-PACKAGE = 'qiniu'
-NAME = 'qiniu'
-DESCRIPTION = 'Qiniu Resource Storage SDK'
-LONG_DESCRIPTION = 'see:\nhttps://github.com/qiniu/python-sdk\n'
-AUTHOR = 'Shanghai Qiniu Information Technologies Co., Ltd.'
-AUTHOR_EMAIL = 'sdk@qiniu.com'
-MAINTAINER_EMAIL = 'support@qiniu.com'
-URL = 'https://github.com/qiniu/python-sdk'
-VERSION = __import__(PACKAGE).__version__
-
 
 setup(
-    name=NAME,
-    version=VERSION,
-    description=DESCRIPTION,
-    long_description=LONG_DESCRIPTION,
-    author=AUTHOR,
-    author_email=AUTHOR_EMAIL,
-    maintainer_email=MAINTAINER_EMAIL,
+    name='qiniu',
+    version=__import__('qiniu').__version__,
+    description='Qiniu Resource Storage SDK',
+    long_description='see:\nhttps://github.com/qiniu/python-sdk\n',
+    author='Shanghai Qiniu Information Technologies Co., Ltd.',
+    author_email='sdk@qiniu.com',
+    maintainer_email='support@qiniu.com',
     license='MIT',
-    url=URL,
+    url='https://github.com/qiniu/python-sdk',
     packages=['qiniu'],
     platforms='any',
     classifiers=[
