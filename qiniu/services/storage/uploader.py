@@ -78,7 +78,7 @@ def _put(upToken, key, data, params, mimeType, crc32, filePath=None):
     if retry:
         url = 'http://' + config.UPBACKUP_HOST + '/'
         if filePath:
-            data = open(filePath, 'rb')
+            data.seek(0)
         try:
             r = _session.post(
                 url, data=fields, files={'file': (name, data, mimeType)},
