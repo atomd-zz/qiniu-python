@@ -19,7 +19,7 @@ setup(
     maintainer_email='support@qiniu.com',
     license='MIT',
     url='https://github.com/qiniu/python-sdk',
-    packages=['qiniu'],
+    packages=['qiniu', 'qiniu.services', 'qiniu.services.storage', 'qiniu.services.processing'],
     platforms='any',
     classifiers=[
         'Intended Audience :: Developers',

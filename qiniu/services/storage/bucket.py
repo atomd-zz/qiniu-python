@@ -121,10 +121,10 @@ class Bucket(object):
     def __entry(self, key):
         return _entry(self.bucket, key)
 
-    def __post(url, data=None):
+    def __post(self, url, data=None):
         return requests.post(url, data=data, auth=RequestsAuth(self.auth), timeout=config._connectionTimeout)
 
-    def __get(url, params=None):
+    def __get(self, url, params=None):
         return requests.get(url, params=params, auth=RequestsAuth(self.auth), timeout=config._connectionTimeout)
 
 
