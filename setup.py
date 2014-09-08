@@ -34,5 +34,12 @@ setup(
         'Programming Language :: Python :: 3.4',
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
         'Topic :: Software Development :: Libraries :: Python Modules'
-    ]
+    ],
+    install_requires=['requests'],
+
+    entry_points={
+        'console_scripts': [
+            'qiniupy = qiniu.main:main',
+        ],
+    }
 )
