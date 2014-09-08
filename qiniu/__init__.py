@@ -7,6 +7,8 @@ For detailed document, please see:
 <http://developer.qiniu.com>
 '''
 
+# flake8: noqa
+
 __version__ = '7.0.0'
 
 from .auth import Auth
