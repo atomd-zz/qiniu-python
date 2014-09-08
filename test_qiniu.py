@@ -7,7 +7,7 @@ import random
 import unittest
 import pytest
 
-from qiniu import Bucket, DeprecatedApi, QiniuServiceException, Auth, put, putFile, resumablePut, resumablePutFile, setDefault
+from qiniu import Bucket, DeprecatedApi, QiniuServiceException, Auth, put, putFile, resumablePut, resumablePutFile, setDefault, etag
 
 from requests.compat import is_py2
 
@@ -139,6 +139,7 @@ class UploaderTestCase(unittest.TestCase):
         token = self.q.uploadToken(bucketName, key)
         ret = putFile(token, key, localfile, mimeType=self.mimeType, checkCrc=True)
         assert ret['key'] == key
+        assert ret['hash'] == etag(localfile)
 
     def test_putInvalidCrc(self):
         key = 'test_invalid'

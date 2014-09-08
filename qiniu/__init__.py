@@ -16,3 +16,5 @@ from .config import setDefault
 
 from .services.storage.bucket import Bucket
 from .services.storage.uploader import put, putFile, resumablePut, resumablePutFile
+
+from .utils import base64Encode, etag

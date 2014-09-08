@@ -1,7 +1,6 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os
 import platform
 from hashlib import sha1
 from base64 import urlsafe_b64encode
@@ -41,10 +40,8 @@ def base64Encode(data):
 def localFileCrc32(filePath):
     crc = 0
     with open(filePath, 'rb') as f:
-        block = f.read(_BLOCK_SIZE)
-        while len(block) != 0:
+        for block in _fileIter(f, _BLOCK_SIZE):
             crc = binascii.crc32(block, crc) & 0xFFFFFFFF
-            block = f.read(_BLOCK_SIZE)
     return crc
 
 
@@ -63,7 +60,26 @@ def _ret(req):
     return ret
 
 
+def _fileIter(inputStream, size):
+    d = inputStream.read(size)
+    while d:
+        yield d
+        d = inputStream.read(size)
+
+
+def _sha1(data):
+    h = sha1()
+    h.update(data)
+    return h.digest()
+
+
+def _etag(inputStream):
+    l = [_sha1(block) for block in _fileIter(inputStream, 4 * 1024 * 1024)]
+    if len(l) == 1:
+        return base64Encode('\x16' + l[0])
+    return base64Encode('\x96' + _sha1(''.join(l)))
+
+
 def etag(filePath):
-    size = os.stat(filePath).st_size
-    if size == 0:
-        return ''
+    with open(filePath, 'rb') as f:
+        return _etag(f)
