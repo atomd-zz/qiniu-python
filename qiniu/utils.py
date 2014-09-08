@@ -73,7 +73,7 @@ def _sha1(data):
     d = h.digest()
     if not is_py2:
         if isinstance(data, bytes):
-            d = d.decode('ascii')
+            d = d.decode('utf-8')
     return d
 
 
