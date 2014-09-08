@@ -69,7 +69,11 @@ def _fileIter(inputStream, size):
 def _sha1(data):
     h = sha1()
     h.update(data)
-    return h.digest()
+    d = h.digest()
+    if not is_py2:
+        if isinstance(data, bytes):
+            d = ret.decode('ascii')
+    return d
 
 
 def _etag(inputStream):
