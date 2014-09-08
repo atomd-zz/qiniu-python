@@ -36,7 +36,7 @@ class Bucket(object):
         if prefix is not None:
             options['prefix'] = prefix
 
-        url = 'http://{}/list'.format(config.RSF_HOST)
+        url = 'http://{0}/list'.format(config.RSF_HOST)
 
         r = self.__get(url, options)
         ret = _ret(r)
@@ -53,13 +53,13 @@ class Bucket(object):
         params = None
         if isinstance(keys, str):
             resource = self.__entry(keys)
-            url = 'http://{}/stat/{}'.format(config.RS_HOST, resource)
+            url = 'http://{0}/stat/{1}'.format(config.RS_HOST, resource)
         else:
             ops = []
             for key in keys:
-                ops.append("/stat/{}".format(self.__entry(key)))
+                ops.append("/stat/{0}".format(self.__entry(key)))
 
-            url = 'http://{}/batch'.format(config.RS_HOST)
+            url = 'http://{0}/batch'.format(config.RS_HOST)
             params = dict(op=ops)
 
         r = self.__post(url, params)
@@ -70,12 +70,12 @@ class Bucket(object):
         params = None
         if isinstance(keys, str):
             resource = self.__entry(keys)
-            url = 'http://{}/delete/{}'.format(config.RS_HOST, resource)
+            url = 'http://{0}/delete/{1}'.format(config.RS_HOST, resource)
         else:
             ops = []
             for key in keys:
-                ops.append("/delete/{}".format(self.__entry(key)))
-            url = 'http://{}/batch'.format(config.RS_HOST)
+                ops.append("/delete/{0}".format(self.__entry(key)))
+            url = 'http://{0}/batch'.format(config.RS_HOST)
             params = dict(op=ops)
 
         r = self.__post(url, params)
@@ -83,20 +83,20 @@ class Bucket(object):
 
     def move(self, keyPairs, targetBucket=None):
         ops = []
-        url = 'http://{}/batch'.format(config.RS_HOST)
+        url = 'http://{0}/batch'.format(config.RS_HOST)
         for k, v in keyPairs.items():
             to = _entry(v, targetBucket) if targetBucket else self.__entry(v)
-            ops.append("/move/{}/{}".format(self.__entry(k), to))
+            ops.append("/move/{0}/{1}".format(self.__entry(k), to))
 
         r = self.__post(url, dict(op=ops))
         return _ret(r)
 
     def copy(self, keyPairs, targetBucket=None):
         ops = []
-        url = 'http://{}/batch'.format(config.RS_HOST)
+        url = 'http://{0}/batch'.format(config.RS_HOST)
         for k, v in keyPairs.items():
             to = _entry(v, targetBucket) if targetBucket else self.__entry(v)
-            ops.append("/copy/{}/{}".format(self.__entry(k), to))
+            ops.append("/copy/{0}/{1}".format(self.__entry(k), to))
 
         r = self.__post(url, dict(op=ops))
         return _ret(r)
@@ -104,18 +104,18 @@ class Bucket(object):
     def fetch(self, url, key):
         to = self.__entry(key)
         resource = base64Encode(url)
-        cmd = 'http://{}/fetch/{}/to/{}'.format(config.IO_HOST, resource, to)
+        cmd = 'http://{0}/fetch/{1}/to/{2}'.format(config.IO_HOST, resource, to)
         r = self.__post(cmd)
         return _ret(r)
 
     def prefetch(self, key):
         resource = self.__entry(key)
-        url = 'http://{}/prefetch/{}'.format(config.IO_HOST, resource)
+        url = 'http://{0}/prefetch/{1}'.format(config.IO_HOST, resource)
         r = self.__post(url)
         return _ret(r)
 
     def buckets(self):
-        url = 'http://{}/buckets'.format(config.RS_HOST)
+        url = 'http://{0}/buckets'.format(config.RS_HOST)
         r = self.__post(url)
         return _ret(r)
 
@@ -130,4 +130,4 @@ class Bucket(object):
 
 
 def _entry(bucket, key):
-    return base64Encode('{}:{}'.format(bucket, key))
+    return base64Encode('{0}:{1}'.format(bucket, key))
