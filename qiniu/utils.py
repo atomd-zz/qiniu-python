@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import os
 import platform
 from hashlib import sha1
 from base64 import urlsafe_b64encode
@@ -84,5 +85,8 @@ def _etag(inputStream):
 
 
 def etag(filePath):
+    size = os.stat(filePath).st_size
+    if size == 0:
+        return base64Encode('\x16')
     with open(filePath, 'rb') as f:
         return _etag(f)
