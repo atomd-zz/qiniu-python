@@ -14,16 +14,13 @@ except ImportError:
     zlib = None
     import binascii
 
-from requests.compat import is_py2
-
 from .exceptions import QiniuServiceException
 from . import __version__
 
+import sys
 
-sys_info = '{0}; {1}'.format(platform.system(), platform.machine())
-py_ver = platform.python_version()
-
-USER_AGENT = 'QiniuPython/{0} ({1}; ) Python/{2}'.format(__version__, sys_info, py_ver)
+_ver = sys.version_info
+is_py2 = (_ver[0] == 2)
 
 
 def base64Encode(data):
@@ -70,18 +67,34 @@ def _fileIter(inputStream, size):
 def _sha1(data):
     h = sha1()
     h.update(data)
-    d = h.digest()
-    if not is_py2:
-        if isinstance(data, bytes):
-            d = d.decode('utf-8')
-    return d
+    return h.digest()
+
+
+if is_py2:
+    _hashPrefix = ['\x16', '\x96']
+else:
+    _hashPrefix = [bytes.fromhex('16'), bytes.fromhex('96')]
+
+
+def _hashEncode(array):
+    data = None
+    prefix = None
+    if len(array) == 1:
+        data = array[0]
+        prefix = _hashPrefix[0]
+    else:
+        if is_py2:
+            s = ''.join(array)
+        else:
+            s = b''.join(array)
+        data = _sha1(s)
+        prefix = _hashPrefix[1]
+    return base64Encode(prefix + data)
 
 
 def _etag(inputStream):
     l = [_sha1(block) for block in _fileIter(inputStream, 4 * 1024 * 1024)]
-    if len(l) == 1:
-        return base64Encode('\x16' + l[0])
-    return base64Encode('\x96' + _sha1(''.join(l)))
+    return _hashEncode(l)
 
 
 def etag(filePath):

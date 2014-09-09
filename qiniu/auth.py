@@ -7,11 +7,10 @@ from hashlib import sha1
 
 from requests.auth import AuthBase
 from requests.compat import urlparse
-from requests.compat import is_py2
 
 from .exceptions import DeprecatedApi
 
-from .utils import base64Encode
+from .utils import base64Encode, is_py2
 
 
 _policyFields = set([

@@ -10,7 +10,7 @@ import pytest
 
 from qiniu import Bucket, DeprecatedApi, QiniuServiceException, Auth, put, putFile, resumablePut, resumablePutFile, setDefault, etag
 
-from requests.compat import is_py2
+from qiniu.utils import is_py2
 
 from qiniu.services.storage.uploader import _put
 

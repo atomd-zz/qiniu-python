@@ -1,5 +1,13 @@
 # -*- coding: utf-8 -*-
 
+import platform
+
+_sysInfo = '{0}; {1}'.format(platform.system(), platform.machine())
+_pyVer = platform.python_version()
+
+USER_AGENT = 'QiniuPython/{0} ({1}; ) Python/{2}'.format(__version__, _sysInfo, _pyVer)
+
+
 RS_HOST = 'rs.qbox.me'
 IO_HOST = 'iovip.qbox.me'
 RSF_HOST = 'rsf.qbox.me'

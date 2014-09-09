@@ -52,6 +52,8 @@ def putFile(
 
 def _put(upToken, key, data, params, mimeType, crc32, filePath=None):
     fields = {}
+    headers = {'User-Agent': config.USER_AGENT}
+
     if params:
         for k, v in params.items():
             fields[k] = str(v)
@@ -71,7 +73,7 @@ def _put(upToken, key, data, params, mimeType, crc32, filePath=None):
     r = None
     exception = None
     try:
-        r = _post(url, data=fields, files={'file': (name, data, mimeType)})
+        r = _post(url, data=fields, files={'file': (name, data, mimeType)}, headers=headers)
     except Exception as e:
         exception = e
     finally:
@@ -82,7 +84,7 @@ def _put(upToken, key, data, params, mimeType, crc32, filePath=None):
         if filePath:
             data.seek(0)
         try:
-            r = _post(url, data=fields, files={'file': (name, data, mimeType)})
+            r = _post(url, data=fields, files={'file': (name, data, mimeType)}, headers=headers)
         except Exception as e:
             raise QiniuClientException(str(e))
 
@@ -211,7 +213,7 @@ class _Resume(object):
         return _ret(r)
 
     def headers(self):
-        return {'Authorization': 'UpToken {0}'.format(self.upToken)}
+        return {'Authorization': 'UpToken {0}'.format(self.upToken), 'User-Agent': config.USER_AGENT}
 
     def post(self, url, data):
         return _post(url, data=data, headers=self.headers())
