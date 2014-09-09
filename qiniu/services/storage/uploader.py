@@ -8,15 +8,21 @@ from qiniu import config
 from qiniu.utils import base64Encode, crc32, localFileCrc32, _ret
 from qiniu.exceptions import QiniuServiceException, QiniuClientException
 
+_session = None
 
-_session = requests.Session()
-_adapter = requests.adapters.HTTPAdapter(
-    pool_connections=config.getDefault('connectionPool'), pool_maxsize=config.getDefault('connectionPool'),
-    max_retries=config.getDefault('connectionRetries'))
-_session.mount('http://', _adapter)
+
+def _init():
+    global _session
+    _session = requests.Session()
+    adapter = requests.adapters.HTTPAdapter(
+        pool_connections=config.getDefault('connectionPool'), pool_maxsize=config.getDefault('connectionPool'),
+        max_retries=config.getDefault('connectionRetries'))
+    _session.mount('http://', adapter)
 
 
 def _post(url, data=None, files=None, headers=None):
+    if _session is None:
+        _init()
     return _session.post(
         url, data=data, files=files, headers=headers, timeout=config.getDefault('connectionTimeout'))
 
