@@ -6,11 +6,10 @@ import json
 from hashlib import sha1
 
 from requests.auth import AuthBase
-from requests.compat import urlparse
 
 from .exceptions import DeprecatedApi
 
-from .compat import is_py2
+from .compat import is_py2, urlparse
 from .utils import base64Encode
 
 
