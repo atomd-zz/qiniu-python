@@ -10,7 +10,8 @@ from requests.compat import urlparse
 
 from .exceptions import DeprecatedApi
 
-from .utils import base64Encode, is_py2
+from .compat import is_py2
+from .utils import base64Encode
 
 
 _policyFields = set([

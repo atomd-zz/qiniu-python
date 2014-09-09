@@ -17,7 +17,8 @@ _session.mount('http://', _adapter)
 
 
 def _post(url, data=None, files=None, headers=None):
-    return _session.post(url, data=data, files=files, headers=headers, timeout=config.getDefault('connectionTimeout'))
+    return _session.post(
+        url, data=data, files=files, headers=headers, timeout=config.getDefault('connectionTimeout'))
 
 
 def _needRetry(response, exception):
@@ -47,31 +48,26 @@ def putFile(
     '''
     crc = localFileCrc32(filePath) if checkCrc else None
     with open(filePath, 'rb') as reader:
-            return _put(upToken, key, reader, params, mimeType, crc)
+            return _put(upToken, key, reader, params, mimeType, crc, isFile=True)
 
 
-def _put(upToken, key, data, params, mimeType, crc32, filePath=None):
+def _put(upToken, key, data, params, mimeType, crc32, isFile=False):
     fields = {}
-    headers = {'User-Agent': config.USER_AGENT}
-
     if params:
         for k, v in params.items():
             fields[k] = str(v)
-
     if crc32:
         fields['crc32'] = crc32
-
     if key is not None:
         fields['key'] = key
-
     fields['token'] = upToken
-
     url = 'http://' + config.getDefault('defaultUpHost') + '/'
-
     name = key if key else 'filename'
 
     r = None
     exception = None
+    headers = {'User-Agent': config.USER_AGENT}
+
     try:
         r = _post(url, data=fields, files={'file': (name, data, mimeType)}, headers=headers)
     except Exception as e:
@@ -81,7 +77,7 @@ def _put(upToken, key, data, params, mimeType, crc32, filePath=None):
 
     if retry:
         url = 'http://' + config.UPBACKUP_HOST + '/'
-        if filePath:
+        if isFile:
             data.seek(0)
         try:
             r = _post(url, data=fields, files={'file': (name, data, mimeType)}, headers=headers)

@@ -7,6 +7,8 @@ from base64 import urlsafe_b64encode
 
 from .config import _BLOCK_SIZE
 
+from .compat import is_py2
+
 try:
     import zlib
     binascii = zlib
@@ -17,10 +19,6 @@ except ImportError:
 from .exceptions import QiniuServiceException
 from . import __version__
 
-import sys
-
-_ver = sys.version_info
-is_py2 = (_ver[0] == 2)
 
 
 def base64Encode(data):
@@ -49,11 +47,11 @@ def crc32(data):
     return binascii.crc32(data) & 0xffffffff
 
 
-def _ret(req):
-    ret = req.json() if req.text != '' else {}
-    if req.status_code//100 != 2:
-        reqId = req.headers['X-Reqid']
-        raise QiniuServiceException(req.status_code, ret['error'], reqId)
+def _ret(resp):
+    ret = resp.json() if resp.text != '' else {}
+    if resp.status_code//100 != 2:
+        reqId = resp.headers['X-Reqid']
+        raise QiniuServiceException(resp.status_code, ret['error'], reqId)
     return ret
 
 
@@ -98,8 +96,5 @@ def _etag(inputStream):
 
 
 def etag(filePath):
-    size = os.stat(filePath).st_size
-    if size == 0:
-        return base64Encode('\x16')
     with open(filePath, 'rb') as f:
         return _etag(f)
