@@ -8,7 +8,6 @@ from hashlib import sha1
 from requests.auth import AuthBase
 
 from .exceptions import DeprecatedApi
-
 from .compat import is_py2, urlparse
 from .utils import base64Encode
 
@@ -44,14 +43,15 @@ class Auth(object):
     def __init__(self, accessKey, secretKey):
         self.__checkKey(accessKey, secretKey)
         self.__accessKey, self.__secretKey = accessKey, secretKey
+        if not is_py2:
+            self.__secretKey = bytes(self.__secretKey, 'utf-8')
 
     def __token(self, data):
-        key = self.__secretKey
         if not is_py2:
             if isinstance(data, str):
                 data = bytes(data, 'utf-8')
-            key = bytes(self.__secretKey, 'utf-8')
-        hashed = hmac.new(key, data, sha1)
+
+        hashed = hmac.new(self.__secretKey, data, sha1)
         return base64Encode(hashed.digest())
 
     def token(self, data):
