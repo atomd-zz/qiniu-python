@@ -17,8 +17,6 @@ except ImportError:
     import binascii
 
 from .exceptions import QiniuServiceException
-from . import __version__
-
 
 
 def base64Encode(data):
@@ -68,10 +66,7 @@ def _sha1(data):
     return h.digest()
 
 
-if is_py2:
-    _hashPrefix = ['\x16', '\x96']
-else:
-    _hashPrefix = [bytes.fromhex('16'), bytes.fromhex('96')]
+_hashPrefix = [b'\x16', b'\x96']
 
 
 def _hashEncode(array):
@@ -81,10 +76,7 @@ def _hashEncode(array):
         data = array[0]
         prefix = _hashPrefix[0]
     else:
-        if is_py2:
-            s = ''.join(array)
-        else:
-            s = b''.join(array)
+        s = b''.join(array)
         data = _sha1(s)
         prefix = _hashPrefix[1]
     return base64Encode(prefix + data)

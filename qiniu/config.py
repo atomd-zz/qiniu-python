@@ -2,6 +2,8 @@
 
 import platform
 
+from . import __version__
+
 _sysInfo = '{0}; {1}'.format(platform.system(), platform.machine())
 _pyVer = platform.python_version()
 
