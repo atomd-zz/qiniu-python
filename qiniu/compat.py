@@ -38,15 +38,15 @@ if is_py2:
 
     builtin_str = str
     bytes = str
-    str = unicode
-    basestring = basestring
-    numeric_types = (int, long, float)
+    str = unicode  # noqa
+    basestring = basestring  # noqa
+    numeric_types = (int, long, float)  # noqa
 
     def b(s):
         return s
 
     def u(s):
-        return unicode(s, 'unicode_escape')
+        return unicode(s, 'unicode_escape')  # noqa
 
 elif is_py3:
     from urllib.parse import urlparse  # noqa
