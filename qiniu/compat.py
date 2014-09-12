@@ -61,7 +61,9 @@ elif is_py3:
     numeric_types = (int, float)
 
     def b(s):
-        return s.encode('utf-8')
+        if isinstance(s, str):
+            return s.encode('utf-8')
+        return s
 
     def u(s):
         return s
