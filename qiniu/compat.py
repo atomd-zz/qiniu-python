@@ -71,7 +71,7 @@ elif is_py3:
     def s(b):
         if isinstance(b, bytes):
             b = b.decode('utf-8')
-        return s
+        return b
 
     def u(s):
         return s
