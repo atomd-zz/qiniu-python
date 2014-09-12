@@ -45,6 +45,9 @@ if is_py2:
     def b(s):
         return s
 
+    def s(b):
+        return b
+
     def u(s):
         return unicode(s, 'unicode_escape')  # noqa
 
@@ -63,6 +66,11 @@ elif is_py3:
     def b(s):
         if isinstance(s, str):
             return s.encode('utf-8')
+        return s
+
+    def s(b):
+        if isinstance(b, bytes):
+            b = b.decode('utf-8')
         return s
 
     def u(s):

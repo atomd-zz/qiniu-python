@@ -5,7 +5,7 @@ from base64 import urlsafe_b64encode
 
 from .config import _BLOCK_SIZE
 
-from .compat import is_py2, b
+from .compat import b, s
 
 try:
     import zlib
@@ -19,10 +19,7 @@ from .exceptions import QiniuServiceException
 
 def base64Encode(data):
     ret = urlsafe_b64encode(b(data))
-    if not is_py2:
-        if isinstance(data, bytes):
-            ret = ret.decode('utf-8')
-    return ret
+    return s(ret)
 
 
 def localFileCrc32(filePath):
