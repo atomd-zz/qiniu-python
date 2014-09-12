@@ -2,13 +2,13 @@
 
 import hmac
 import time
-import json
 from hashlib import sha1
+
+from .compat import is_py2, urlparse, json, b
 
 from requests.auth import AuthBase
 
 from .exceptions import DeprecatedApi
-from .compat import is_py2, urlparse
 from .utils import base64Encode
 
 
@@ -43,14 +43,10 @@ class Auth(object):
     def __init__(self, accessKey, secretKey):
         self.__checkKey(accessKey, secretKey)
         self.__accessKey, self.__secretKey = accessKey, secretKey
-        if not is_py2:
-            self.__secretKey = bytes(self.__secretKey, 'utf-8')
+        self.__secretKey = b(self.__secretKey)
 
     def __token(self, data):
-        if not is_py2:
-            if isinstance(data, str):
-                data = bytes(data, 'utf-8')
-
+        data = b(data)
         hashed = hmac.new(self.__secretKey, data, sha1)
         return base64Encode(hashed.digest())
 
@@ -79,7 +75,8 @@ class Auth(object):
 
         return '{0}:{1}'.format(self.__accessKey, self.__token(data))
 
-    def __checkKey(self, accessKey, secretKey):
+    @staticmethod
+    def __checkKey(accessKey, secretKey):
         if not (accessKey and secretKey):
             raise ValueError('invalid key')
 
@@ -98,7 +95,7 @@ class Auth(object):
         token = self.token(url)
         return '{0}&token={1}'.format(url, token)
 
-    def uploadToken(self, bucket, key=None, policy=None, expires=3600, strictPolicy=True):
+    def uploadToken(self, bucket, key=None, expires=3600, policy=None, strictPolicy=True):
         if bucket is None or bucket == '':
             raise ValueError('invalid bucket name')
 
@@ -117,7 +114,8 @@ class Auth(object):
         data = json.dumps(args, separators=(',', ':'))
         return self.tokenWithData(data)
 
-    def __copyPolicy(self, policy, to, strictPolicy):
+    @staticmethod
+    def __copyPolicy(policy, to, strictPolicy):
         for k, v in policy.items():
             if k in _deprecatedPolicyFields:
                 raise DeprecatedApi(k)

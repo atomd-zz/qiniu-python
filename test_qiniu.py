@@ -59,7 +59,7 @@ class AuthTestCase(unittest.TestCase):
 
     def test_deprecatedPolicy(self):
         with pytest.raises(DeprecatedApi):
-            dummyMac.uploadToken('1', None, {'asyncOps': 1})
+            dummyMac.uploadToken('1', None, policy={'asyncOps': 1})
 
 
 class BucketTestCase(unittest.TestCase):

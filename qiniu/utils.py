@@ -7,7 +7,7 @@ from base64 import urlsafe_b64encode
 
 from .config import _BLOCK_SIZE
 
-from .compat import is_py2
+from .compat import is_py2, b, str
 
 try:
     import zlib
@@ -20,10 +20,7 @@ from .exceptions import QiniuServiceException
 
 
 def base64Encode(data):
-    if not is_py2:
-        if isinstance(data, str):
-            data = bytes(data, 'utf-8')
-    ret = urlsafe_b64encode(data)
+    ret = urlsafe_b64encode(b(data))
     if not is_py2:
         if isinstance(data, bytes):
             ret = ret.decode('utf-8')
@@ -39,10 +36,7 @@ def localFileCrc32(filePath):
 
 
 def crc32(data):
-    if not is_py2:
-        if isinstance(data, str):
-            data = bytes(data, 'utf-8')
-    return binascii.crc32(data) & 0xffffffff
+    return binascii.crc32(b(data)) & 0xffffffff
 
 
 def _ret(resp):
@@ -66,19 +60,14 @@ def _sha1(data):
     return h.digest()
 
 
-_hashPrefix = [b'\x16', b'\x96']
-
-
 def _hashEncode(array):
-    data = None
-    prefix = None
     if len(array) == 1:
         data = array[0]
-        prefix = _hashPrefix[0]
+        prefix = b('\x16')
     else:
-        s = b''.join(array)
+        s = b('').join(array)
         data = _sha1(s)
-        prefix = _hashPrefix[1]
+        prefix = b('\x96')
     return base64Encode(prefix + data)
 
 
