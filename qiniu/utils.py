@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import os
-import platform
 from hashlib import sha1
 from base64 import urlsafe_b64encode
 

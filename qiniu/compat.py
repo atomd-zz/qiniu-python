@@ -44,6 +44,7 @@ if is_py2:
 
     def b(s):
         return s
+
     def u(s):
         return unicode(s, 'unicode_escape')
 
@@ -61,5 +62,6 @@ elif is_py3:
 
     def b(s):
         return s.encode('utf-8')
+
     def u(s):
         return s
