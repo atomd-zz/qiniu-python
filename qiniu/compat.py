@@ -11,7 +11,7 @@ try:
 except (ImportError, SyntaxError):
     # simplejson does not support Python 3.2, it thows a SyntaxError
     # because of u'...' Unicode literals.
-    import json
+    import json  # noqa
 
 
 # -------
@@ -32,7 +32,7 @@ is_py3 = (_ver[0] == 3)
 # ---------
 
 if is_py2:
-    from urlparse import urlparse
+    from urlparse import urlparse  # noqa
     import StringIO
     StringIO = BytesIO = StringIO.StringIO
 
@@ -49,7 +49,7 @@ if is_py2:
         return unicode(s, 'unicode_escape')
 
 elif is_py3:
-    from urllib.parse import urlparse
+    from urllib.parse import urlparse  # noqa
     import io
     StringIO = io.StringIO
     BytesIO = io.BytesIO

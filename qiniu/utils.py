@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 
-import os
 from hashlib import sha1
 from base64 import urlsafe_b64encode
 
 from .config import _BLOCK_SIZE
 
-from .compat import is_py2, b, str
+from .compat import is_py2, b
 
 try:
     import zlib

@@ -4,7 +4,7 @@ import hmac
 import time
 from hashlib import sha1
 
-from .compat import is_py2, urlparse, json, b
+from .compat import urlparse, json, b
 
 from requests.auth import AuthBase
 
