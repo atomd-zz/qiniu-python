@@ -116,7 +116,7 @@ class BucketTestCase(unittest.TestCase):
 
 class UploaderTestCase(unittest.TestCase):
 
-    mimeType = "text/plain"
+    mime_type = "text/plain"
     params = {'x:a': 'a'}
     q = Auth(access_key, secret_key)
 
@@ -130,7 +130,7 @@ class UploaderTestCase(unittest.TestCase):
         key = ''
         data = 'hello bubby!'
         token = self.q.upload_token(bucket_name, key)
-        ret = put(token, key, data, checkCrc=True)
+        ret = put(token, key, data, check_crc=True)
         assert ret['key'] == key
 
     def test_putfile(self):
@@ -138,7 +138,7 @@ class UploaderTestCase(unittest.TestCase):
         key = 'test_file'
 
         token = self.q.upload_token(bucket_name, key)
-        ret = putfile(token, key, localfile, mimeType=self.mimeType, checkCrc=True)
+        ret = putfile(token, key, localfile, mime_type=self.mime_type, check_crc=True)
         assert ret['key'] == key
         assert ret['hash'] == etag(localfile)
 
@@ -175,7 +175,7 @@ class UploaderTestCase(unittest.TestCase):
 
 class ResumableUploaderTestCase(unittest.TestCase):
 
-    mimeType = "text/plain"
+    mime_type = "text/plain"
     params = {'x:a': 'a'}
     q = Auth(access_key, secret_key)
 
@@ -184,7 +184,7 @@ class ResumableUploaderTestCase(unittest.TestCase):
         key = 'test_file_r'
 
         token = self.q.upload_token(bucket_name, key)
-        ret = resumable_putfile(token, key, localfile, self.params, self.mimeType)
+        ret = resumable_putfile(token, key, localfile, self.params, self.mime_type)
         assert ret['key'] == key
 
     def test_retry(self):
@@ -192,7 +192,7 @@ class ResumableUploaderTestCase(unittest.TestCase):
         key = 'test_file_r_retry'
         set_default(default_up_host='a')
         token = self.q.upload_token(bucket_name, key)
-        ret = resumable_putfile(token, key, localfile, self.params, self.mimeType)
+        ret = resumable_putfile(token, key, localfile, self.params, self.mime_type)
         assert ret['key'] == key
         qiniu.set_default(default_up_host=qiniu.config.UPAUTO_HOST)
 
