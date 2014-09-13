@@ -67,7 +67,7 @@ def _hashEncode(array):
 
 
 def _etag(inputStream):
-    l = [_sha1(block) for block in _fileIter(inputStream, 4 * 1024 * 1024)]
+    l = [_sha1(block) for block in _fileIter(inputStream, _BLOCK_SIZE)]
     return _hashEncode(l)
 
 

@@ -5,7 +5,7 @@ import os
 import requests
 
 from qiniu import config
-from qiniu.utils import base64Encode, crc32, localFileCrc32, _ret
+from qiniu.utils import base64Encode, crc32, localFileCrc32, _ret, _fileIter
 from qiniu.exceptions import QiniuServiceException, QiniuClientException
 
 _session = None
@@ -53,8 +53,8 @@ def putFile(
     data may be str or read()able object.
     '''
     crc = localFileCrc32(filePath) if checkCrc else None
-    with open(filePath, 'rb') as reader:
-            return _put(upToken, key, reader, params, mimeType, crc, isFile=True)
+    with open(filePath, 'rb') as inputStream:
+            return _put(upToken, key, inputStream, params, mimeType, crc, isFile=True)
 
 
 def _put(upToken, key, data, params, mimeType, crc32, isFile=False):
@@ -93,58 +93,36 @@ def _put(upToken, key, data, params, mimeType, crc32, isFile=False):
     return _ret(r)
 
 
-def resumablePut(upToken, key, reader, dataSize, params=None, mimeType=None):
-    task = _Resume(upToken, key, reader, dataSize, params, mimeType)
+def resumablePut(upToken, key, inputStream, dataSize, params=None, mimeType=None):
+    task = _Resume(upToken, key, inputStream, dataSize, params, mimeType)
     return task.upload()
 
 
 def resumablePutFile(upToken, key, filePath, params=None, mimeType=None):
     ret = {}
     size = os.stat(filePath).st_size
-    with open(filePath, 'rb') as reader:
-        ret = resumablePut(upToken, key, reader, size, params, mimeType)
+    with open(filePath, 'rb') as inputStream:
+        ret = resumablePut(upToken, key, inputStream, size, params, mimeType)
     return ret
 
 
 class _Resume(object):
 
-    def __init__(self, upToken, key, reader, dataSize, params, mimeType):
+    def __init__(self, upToken, key, inputStream, dataSize, params, mimeType):
         self.upToken = upToken
         self.key = key
-        self.reader = reader
+        self.inputStream = inputStream
         self.size = dataSize
         self.params = params
         self.mimeType = mimeType
 
     def upload(self):
-        self.blockCount = self.count()
-        self.blockStatus = [None] * self.blockCount
+        self.blockStatus = []
 
-        # todo cactch exception
-        for i in range(self.blockCount):
-            length = self.calcDataLengh(i)
-            dataBlock = self.reader.read(length)
-
-            self.resumableBlockPut(self.upToken, dataBlock, length,  i)
-
+        for block in _fileIter(self.inputStream, config._BLOCK_SIZE):
+            ret = self.makeBlock(block, len(block))
+            self.blockStatus.append(ret)
         return self.makeFile()
-
-    def resumableBlockPut(self, upToken, block, length, index):
-        if self.blockStatus[index] and 'ctx' in self.blockStatus[index]:
-            return
-        # todo retry
-        self.blockStatus[index] = self.makeBlock(block, length)
-
-        return
-
-    def count(self):
-        return (self.size + config._BLOCK_SIZE - 1) // config._BLOCK_SIZE
-
-    def calcDataLengh(self, index):
-        need = config._BLOCK_SIZE
-        if (index + 1) * config._BLOCK_SIZE > self.size:
-            need = self.size - index * config._BLOCK_SIZE
-        return need
 
     def makeBlock(self, block, blockSize):
         crc = crc32(block)
