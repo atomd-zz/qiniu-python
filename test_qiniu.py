@@ -8,7 +8,7 @@ import random
 import unittest
 import pytest
 
-from qiniu import Bucket, DeprecatedApi, QiniuServiceException, Auth, put, putFile, resumablePut, resumablePutFile, setDefault, etag
+from qiniu import Bucket, DeprecatedApi, QiniuServiceException, Auth, put, putfile, resumable_put, resumable_putfile, set_default, etag
 
 from qiniu.compat import is_py2
 
@@ -21,13 +21,13 @@ if is_py2:
     reload(sys)
     sys.setdefaultencoding('utf-8')
 
-accessKey = os.getenv('QINIU_ACCESS_KEY')
-secretKey = os.getenv('QINIU_SECRET_KEY')
-bucketName = os.getenv('QINIU_TEST_BUCKET')
+access_key = os.getenv('QINIU_ACCESS_KEY')
+secret_key = os.getenv('QINIU_SECRET_KEY')
+bucket_name = os.getenv('QINIU_TEST_BUCKET')
 
-dummyAccessKey = 'abcdefghklmnopq'
-dummySecretKey = '1234567890'
-dummyMac = Auth(dummyAccessKey, dummySecretKey)
+dummyaccess_key = 'abcdefghklmnopq'
+dummysecret_key = '1234567890'
+dummyMac = Auth(dummyaccess_key, dummysecret_key)
 
 
 def randString(length):
@@ -41,8 +41,8 @@ class AuthTestCase(unittest.TestCase):
         token = dummyMac.token('test')
         assert token == 'abcdefghklmnopq:mSNBTR7uS2crJsyFr2Amwv1LaYg='
 
-    def test_tokenWithData(self):
-        token = dummyMac.tokenWithData('test')
+    def test_token_with_data(self):
+        token = dummyMac.token_with_data('test')
         assert token == 'abcdefghklmnopq:-jP8eEV9v48MkYiBGs81aDxl60E=:dGVzdA=='
 
     def test_noKey(self):
@@ -51,20 +51,20 @@ class AuthTestCase(unittest.TestCase):
         with pytest.raises(ValueError):
             Auth('', '').token('nokey')
 
-    def test_tokenOfRequest(self):
-        token = dummyMac.tokenOfRequest('http://www.qiniu.com?go=1', 'test', '')
+    def test_token_of_request(self):
+        token = dummyMac.token_of_request('http://www.qiniu.com?go=1', 'test', '')
         assert token == 'abcdefghklmnopq:cFyRVoWrE3IugPIMP5YJFTO-O-Y='
-        token = dummyMac.tokenOfRequest('http://www.qiniu.com?go=1', 'test', 'application/x-www-form-urlencoded')
+        token = dummyMac.token_of_request('http://www.qiniu.com?go=1', 'test', 'application/x-www-form-urlencoded')
         assert token == 'abcdefghklmnopq:svWRNcacOE-YMsc70nuIYdaa1e4='
 
     def test_deprecatedPolicy(self):
         with pytest.raises(DeprecatedApi):
-            dummyMac.uploadToken('1', None, policy={'asyncOps': 1})
+            dummyMac.upload_token('1', None, policy={'asyncOps': 1})
 
 
 class BucketTestCase(unittest.TestCase):
-    q = Auth(accessKey, secretKey)
-    bucket = Bucket(bucketName, q)
+    q = Auth(access_key, secret_key)
+    bucket = Bucket(bucket_name, q)
 
     def test_list(self):
         ret, eof = self.bucket.list(limit=4)
@@ -75,7 +75,7 @@ class BucketTestCase(unittest.TestCase):
 
     def test_buckets(self):
         ret = self.bucket.buckets()
-        assert bucketName in ret
+        assert bucket_name in ret
 
     def test_pefetch(self):
         ret = self.bucket.prefetch('python-sdk.html')
@@ -118,27 +118,27 @@ class UploaderTestCase(unittest.TestCase):
 
     mimeType = "text/plain"
     params = {'x:a': 'a'}
-    q = Auth(accessKey, secretKey)
+    q = Auth(access_key, secret_key)
 
     def test_put(self):
         key = 'a\\b\\c"你好'
         data = 'hello bubby!'
-        token = self.q.uploadToken(bucketName)
+        token = self.q.upload_token(bucket_name)
         ret = put(token, key, data)
         assert ret['key'] == key
 
         key = ''
         data = 'hello bubby!'
-        token = self.q.uploadToken(bucketName, key)
+        token = self.q.upload_token(bucket_name, key)
         ret = put(token, key, data, checkCrc=True)
         assert ret['key'] == key
 
-    def test_putFile(self):
+    def test_putfile(self):
         localfile = __file__
         key = 'test_file'
 
-        token = self.q.uploadToken(bucketName, key)
-        ret = putFile(token, key, localfile, mimeType=self.mimeType, checkCrc=True)
+        token = self.q.upload_token(bucket_name, key)
+        ret = putfile(token, key, localfile, mimeType=self.mimeType, checkCrc=True)
         assert ret['key'] == key
         assert ret['hash'] == etag(localfile)
 
@@ -146,19 +146,19 @@ class UploaderTestCase(unittest.TestCase):
         key = 'test_invalid'
         data = 'hello bubby!'
         crc32 = 'wrong crc32'
-        token = self.q.uploadToken(bucketName)
+        token = self.q.upload_token(bucket_name)
         with pytest.raises(QiniuServiceException):
             _put(token, key, data, None, None, crc32=crc32)
 
     def test_putWithoutKey(self):
         key = None
         data = 'hello bubby!'
-        token = self.q.uploadToken(bucketName)
+        token = self.q.upload_token(bucket_name)
         ret = put(token, key, data)
         assert ret['hash'] == ret['key']
 
         data = 'hello bubby!'
-        token = self.q.uploadToken(bucketName, 'nokey2')
+        token = self.q.upload_token(bucket_name, 'nokey2')
 
         with pytest.raises(QiniuServiceException):
             put(token, None, data)
@@ -166,35 +166,35 @@ class UploaderTestCase(unittest.TestCase):
     def test_retry(self):
         key = 'retry'
         data = 'hello retry!'
-        setDefault(defaultUpHost='a')
-        token = self.q.uploadToken(bucketName)
+        set_default(default_up_host='a')
+        token = self.q.upload_token(bucket_name)
         ret = put(token, key, data)
         assert ret['key'] == key
-        qiniu.setDefault(defaultUpHost=qiniu.config.UPAUTO_HOST)
+        qiniu.set_default(default_up_host=qiniu.config.UPAUTO_HOST)
 
 
 class ResumableUploaderTestCase(unittest.TestCase):
 
     mimeType = "text/plain"
     params = {'x:a': 'a'}
-    q = Auth(accessKey, secretKey)
+    q = Auth(access_key, secret_key)
 
-    def test_putFile(self):
+    def test_putfile(self):
         localfile = __file__
         key = 'test_file_r'
 
-        token = self.q.uploadToken(bucketName, key)
-        ret = resumablePutFile(token, key, localfile, self.params, self.mimeType)
+        token = self.q.upload_token(bucket_name, key)
+        ret = resumable_putfile(token, key, localfile, self.params, self.mimeType)
         assert ret['key'] == key
 
     def test_retry(self):
         localfile = __file__
         key = 'test_file_r_retry'
-        setDefault(defaultUpHost='a')
-        token = self.q.uploadToken(bucketName, key)
-        ret = resumablePutFile(token, key, localfile, self.params, self.mimeType)
+        set_default(default_up_host='a')
+        token = self.q.upload_token(bucket_name, key)
+        ret = resumable_putfile(token, key, localfile, self.params, self.mimeType)
         assert ret['key'] == key
-        qiniu.setDefault(defaultUpHost=qiniu.config.UPAUTO_HOST)
+        qiniu.set_default(default_up_host=qiniu.config.UPAUTO_HOST)
 
 
 if __name__ == '__main__':

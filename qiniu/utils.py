@@ -17,15 +17,15 @@ except ImportError:
 from .exceptions import QiniuServiceException
 
 
-def base64Encode(data):
+def urlsafe_base64_encode(data):
     ret = urlsafe_b64encode(b(data))
     return s(ret)
 
 
-def localFileCrc32(filePath):
+def file_crc32(filePath):
     crc = 0
     with open(filePath, 'rb') as f:
-        for block in _fileIter(f, _BLOCK_SIZE):
+        for block in _file_iter(f, _BLOCK_SIZE):
             crc = binascii.crc32(block, crc) & 0xFFFFFFFF
     return crc
 
@@ -42,11 +42,11 @@ def _ret(resp):
     return ret
 
 
-def _fileIter(inputStream, size):
-    d = inputStream.read(size)
+def _file_iter(input_stream, size):
+    d = input_stream.read(size)
     while d:
         yield d
-        d = inputStream.read(size)
+        d = input_stream.read(size)
 
 
 def _sha1(data):
@@ -55,7 +55,8 @@ def _sha1(data):
     return h.digest()
 
 
-def _hashEncode(array):
+def _etag(input_stream):
+    array = [_sha1(block) for block in _file_iter(input_stream, _BLOCK_SIZE)]
     if len(array) == 1:
         data = array[0]
         prefix = b('\x16')
@@ -63,12 +64,7 @@ def _hashEncode(array):
         s = b('').join(array)
         data = _sha1(s)
         prefix = b('\x96')
-    return base64Encode(prefix + data)
-
-
-def _etag(inputStream):
-    l = [_sha1(block) for block in _fileIter(inputStream, _BLOCK_SIZE)]
-    return _hashEncode(l)
+    return urlsafe_base64_encode(prefix + data)
 
 
 def etag(filePath):

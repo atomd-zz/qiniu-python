@@ -3,11 +3,11 @@
 
 class QiniuServiceException(Exception):
     """common exception"""
-    def __init__(self, statusCode, description, reqId):
+    def __init__(self, status_code, description, req_id):
         super(QiniuServiceException, self).__init__()
-        self.statusCode = statusCode
+        self.status_code = status_code
         self.description = description
-        self.reqId = reqId
+        self.req_id = req_id
 
 
 class QiniuClientException(Exception):

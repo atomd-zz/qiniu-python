@@ -14,9 +14,9 @@ __version__ = '7.0.0'
 from .auth import Auth
 
 from .exceptions import DeprecatedApi, QiniuServiceException
-from .config import setDefault
+from .config import set_default
 
 from .services.storage.bucket import Bucket
-from .services.storage.uploader import put, putFile, resumablePut, resumablePutFile
+from .services.storage.uploader import put, putfile, resumable_put, resumable_putfile
 
-from .utils import base64Encode, etag
+from .utils import urlsafe_base64_encode, etag

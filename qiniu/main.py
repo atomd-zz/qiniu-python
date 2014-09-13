@@ -13,12 +13,12 @@ def main():
     parser_etag = sub_parsers.add_parser(
         'etag', description='calculate the etag of the file', help='etag [file...]')
     parser_etag.add_argument(
-        'etagFiles', metavar='N', nargs='+', help='the file list for calculate')
+        'etag_files', metavar='N', nargs='+', help='the file list for calculate')
 
     args = parser.parse_args()
 
-    if args.etagFiles:
-        r = [etag(file) for file in args.etagFiles]
+    if args.etag_files:
+        r = [etag(file) for file in args.etag_files]
         if len(r) == 1:
             print(r[0])
         else:

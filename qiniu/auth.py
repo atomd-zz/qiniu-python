@@ -9,10 +9,10 @@ from .compat import urlparse, json, b
 from requests.auth import AuthBase
 
 from .exceptions import DeprecatedApi
-from .utils import base64Encode
+from .utils import urlsafe_base64_encode
 
 
-_policyFields = set([
+_policy_fields = set([
     'callbackUrl',
     'callbackBody',
     'callbackHost',
@@ -33,34 +33,34 @@ _policyFields = set([
     'persistentPipeline',
 ])
 
-_deprecatedPolicyFields = set([
+_deprecated_policy_fields = set([
     'asyncOps'
 ])
 
 
 class Auth(object):
 
-    def __init__(self, accessKey, secretKey):
-        self.__checkKey(accessKey, secretKey)
-        self.__accessKey, self.__secretKey = accessKey, secretKey
-        self.__secretKey = b(self.__secretKey)
+    def __init__(self, access_key, secret_key):
+        self.__checkKey(access_key, secret_key)
+        self.__access_key, self.__secret_key = access_key, secret_key
+        self.__secret_key = b(self.__secret_key)
 
     def __token(self, data):
         data = b(data)
-        hashed = hmac.new(self.__secretKey, data, sha1)
-        return base64Encode(hashed.digest())
+        hashed = hmac.new(self.__secret_key, data, sha1)
+        return urlsafe_base64_encode(hashed.digest())
 
     def token(self, data):
-        return '{0}:{1}'.format(self.__accessKey, self.__token(data))
+        return '{0}:{1}'.format(self.__access_key, self.__token(data))
 
-    def tokenWithData(self, data):
-        data = base64Encode(data)
-        return '{0}:{1}:{2}'.format(self.__accessKey, self.__token(data), data)
+    def token_with_data(self, data):
+        data = urlsafe_base64_encode(data)
+        return '{0}:{1}:{2}'.format(self.__access_key, self.__token(data), data)
 
-    def tokenOfRequest(self, url, body=None, contentType=None):
-        parsedUrl = urlparse(url)
-        query = parsedUrl.query
-        path = parsedUrl.path
+    def token_of_request(self, url, body=None, content_type=None):
+        parsed_url = urlparse(url)
+        query = parsed_url.query
+        path = parsed_url.path
         data = path
         if query != '':
             data = ''.join([data, '?', query])
@@ -70,17 +70,17 @@ class Auth(object):
             mimes = [
                 'application/x-www-form-urlencoded',
             ]
-            if contentType in mimes:
+            if content_type in mimes:
                 data += body
 
-        return '{0}:{1}'.format(self.__accessKey, self.__token(data))
+        return '{0}:{1}'.format(self.__access_key, self.__token(data))
 
     @staticmethod
-    def __checkKey(accessKey, secretKey):
-        if not (accessKey and secretKey):
+    def __checkKey(access_key, secret_key):
+        if not (access_key and secret_key):
             raise ValueError('invalid key')
 
-    def privateDownloadUrl(self, url, expires=3600):
+    def private_download_url(self, url, expires=3600):
         '''
          *  return private url
         '''
@@ -95,7 +95,7 @@ class Auth(object):
         token = self.token(url)
         return '{0}&token={1}'.format(url, token)
 
-    def uploadToken(self, bucket, key=None, expires=3600, policy=None, strictPolicy=True):
+    def upload_token(self, bucket, key=None, expires=3600, policy=None, strict_policy=True):
         if bucket is None or bucket == '':
             raise ValueError('invalid bucket name')
 
@@ -109,17 +109,17 @@ class Auth(object):
         )
 
         if policy is not None:
-            self.__copyPolicy(policy, args, strictPolicy)
+            self.__copy_policy(policy, args, strict_policy)
 
         data = json.dumps(args, separators=(',', ':'))
-        return self.tokenWithData(data)
+        return self.token_with_data(data)
 
     @staticmethod
-    def __copyPolicy(policy, to, strictPolicy):
+    def __copy_policy(policy, to, strict_policy):
         for k, v in policy.items():
-            if k in _deprecatedPolicyFields:
+            if k in _deprecated_policy_fields:
                 raise DeprecatedApi(k)
-            if (not strictPolicy) or k in _policyFields:
+            if (not strict_policy) or k in _policy_fields:
                 to[k] = v
 
 
@@ -130,8 +130,8 @@ class RequestsAuth(AuthBase):
     def __call__(self, r):
         token = None
         if r.body is not None and r.headers['Content-Type'] == 'application/x-www-form-urlencoded':
-            token = self.auth.tokenOfRequest(r.url, r.body, 'application/x-www-form-urlencoded')
+            token = self.auth.token_of_request(r.url, r.body, 'application/x-www-form-urlencoded')
         else:
-            token = self.auth.tokenOfRequest(r.url)
+            token = self.auth.token_of_request(r.url)
         r.headers['Authorization'] = 'QBox {0}'.format(token)
         return r

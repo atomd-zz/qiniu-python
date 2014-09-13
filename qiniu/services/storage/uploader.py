@@ -5,7 +5,7 @@ import os
 import requests
 
 from qiniu import config
-from qiniu.utils import base64Encode, crc32, localFileCrc32, _ret, _fileIter
+from qiniu.utils import urlsafe_base64_encode, crc32, file_crc32, _ret, _file_iter
 from qiniu.exceptions import QiniuServiceException, QiniuClientException
 
 _session = None
@@ -15,8 +15,8 @@ def _init():
     global _session
     _session = requests.Session()
     adapter = requests.adapters.HTTPAdapter(
-        pool_connections=config.getDefault('connectionPool'), pool_maxsize=config.getDefault('connectionPool'),
-        max_retries=config.getDefault('connectionRetries'))
+        pool_connections=config.get_default('connection_pool'), pool_maxsize=config.get_default('connection_pool'),
+        max_retries=config.get_default('connection_retries'))
     _session.mount('http://', adapter)
 
 
@@ -24,10 +24,10 @@ def _post(url, data=None, files=None, headers=None):
     if _session is None:
         _init()
     return _session.post(
-        url, data=data, files=files, headers=headers, timeout=config.getDefault('connectionTimeout'))
+        url, data=data, files=files, headers=headers, timeout=config.get_default('connection_timeout'))
 
 
-def _needRetry(response, exception):
+def _need_retry(response, exception):
     if response is None:
         return True
     code = response.status_code
@@ -46,15 +46,15 @@ def put(
     return _put(upToken, key, data, params, mimeType, crc)
 
 
-def putFile(
+def putfile(
         upToken, key, filePath, params=None, mimeType='application/octet-stream', checkCrc=False):
     ''' put data to Qiniu
     If key is None, the server will generate one.
     data may be str or read()able object.
     '''
-    crc = localFileCrc32(filePath) if checkCrc else None
-    with open(filePath, 'rb') as inputStream:
-            return _put(upToken, key, inputStream, params, mimeType, crc, isFile=True)
+    crc = file_crc32(filePath) if checkCrc else None
+    with open(filePath, 'rb') as input_stream:
+            return _put(upToken, key, input_stream, params, mimeType, crc, isFile=True)
 
 
 def _put(upToken, key, data, params, mimeType, crc32, isFile=False):
@@ -67,7 +67,7 @@ def _put(upToken, key, data, params, mimeType, crc32, isFile=False):
     if key is not None:
         fields['key'] = key
     fields['token'] = upToken
-    url = 'http://' + config.getDefault('defaultUpHost') + '/'
+    url = 'http://' + config.get_default('default_up_host') + '/'
     name = key if key else 'filename'
 
     r = None
@@ -79,7 +79,7 @@ def _put(upToken, key, data, params, mimeType, crc32, isFile=False):
     except Exception as e:
         exception = e
     finally:
-        retry = _needRetry(r, exception)
+        retry = _need_retry(r, exception)
 
     if retry:
         url = 'http://' + config.UPBACKUP_HOST + '/'
@@ -93,25 +93,25 @@ def _put(upToken, key, data, params, mimeType, crc32, isFile=False):
     return _ret(r)
 
 
-def resumablePut(upToken, key, inputStream, dataSize, params=None, mimeType=None):
-    task = _Resume(upToken, key, inputStream, dataSize, params, mimeType)
+def resumable_put(upToken, key, input_stream, dataSize, params=None, mimeType=None):
+    task = _Resume(upToken, key, input_stream, dataSize, params, mimeType)
     return task.upload()
 
 
-def resumablePutFile(upToken, key, filePath, params=None, mimeType=None):
+def resumable_putfile(upToken, key, filePath, params=None, mimeType=None):
     ret = {}
     size = os.stat(filePath).st_size
-    with open(filePath, 'rb') as inputStream:
-        ret = resumablePut(upToken, key, inputStream, size, params, mimeType)
+    with open(filePath, 'rb') as input_stream:
+        ret = resumable_put(upToken, key, input_stream, size, params, mimeType)
     return ret
 
 
 class _Resume(object):
 
-    def __init__(self, upToken, key, inputStream, dataSize, params, mimeType):
+    def __init__(self, upToken, key, input_stream, dataSize, params, mimeType):
         self.upToken = upToken
         self.key = key
-        self.inputStream = inputStream
+        self.input_stream = input_stream
         self.size = dataSize
         self.params = params
         self.mimeType = mimeType
@@ -119,7 +119,7 @@ class _Resume(object):
     def upload(self):
         self.blockStatus = []
 
-        for block in _fileIter(self.inputStream, config._BLOCK_SIZE):
+        for block in _file_iter(self.input_stream, config._BLOCK_SIZE):
             ret = self.makeBlock(block, len(block))
             self.blockStatus.append(ret)
         return self.makeFile()
@@ -127,7 +127,7 @@ class _Resume(object):
     def makeBlock(self, block, blockSize):
         crc = crc32(block)
         block = bytearray(block)
-        url = self.blockUrl(config.getDefault('defaultUpHost'), blockSize)
+        url = self.blockUrl(config.get_default('default_up_host'), blockSize)
 
         r = None
         exception = None
@@ -136,7 +136,7 @@ class _Resume(object):
         except Exception as e:
             exception = e
         finally:
-            retry = _needRetry(r, exception)
+            retry = _need_retry(r, exception)
 
         if retry:
             url = self.blockUrl(config.UPBACKUP_HOST, blockSize)
@@ -158,20 +158,20 @@ class _Resume(object):
         url = ['http://{0}/mkfile/{1}'.format(host, self.size)]
 
         if self.mimeType:
-            url.append('mimeType/{0}'.format(base64Encode(self.mimeType)))
+            url.append('mimeType/{0}'.format(urlsafe_base64_encode(self.mimeType)))
 
         if self.key is not None:
-            url.append('key/{0}'.format(base64Encode(self.key)))
+            url.append('key/{0}'.format(urlsafe_base64_encode(self.key)))
 
         if self.params:
             for k, v in self.params.items():
-                url.append('{0}/{1}'.format(k, base64Encode(v)))
+                url.append('{0}/{1}'.format(k, urlsafe_base64_encode(v)))
 
         url = '/'.join(url)
         return url
 
     def makeFile(self):
-        url = self.makeFileUrl(config.getDefault('defaultUpHost'))
+        url = self.makeFileUrl(config.get_default('default_up_host'))
         body = ','.join([status['ctx'] for status in self.blockStatus])
 
         r = None
@@ -181,7 +181,7 @@ class _Resume(object):
         except Exception as e:
             exception = e
         finally:
-            retry = _needRetry(r, exception)
+            retry = _need_retry(r, exception)
 
         if retry:
             url = self.makeFileUrl(config.UPBACKUP_HOST)

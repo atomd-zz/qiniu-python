@@ -5,7 +5,7 @@ import requests
 from qiniu import config
 from qiniu.auth import RequestsAuth
 
-from qiniu.utils import base64Encode, _ret
+from qiniu.utils import urlsafe_base64_encode, _ret
 
 
 class Bucket(object):
@@ -103,7 +103,7 @@ class Bucket(object):
 
     def fetch(self, url, key):
         to = self.__entry(key)
-        resource = base64Encode(url)
+        resource = urlsafe_base64_encode(url)
         cmd = 'http://{0}/fetch/{1}/to/{2}'.format(config.IO_HOST, resource, to)
         r = self.__post(cmd)
         return _ret(r)
@@ -126,14 +126,14 @@ class Bucket(object):
         headers = {'User-Agent': config.USER_AGENT}
         return requests.post(
             url, data=data, auth=RequestsAuth(self.auth),
-            timeout=config.getDefault('connectionTimeout'), headers=headers)
+            timeout=config.get_default('connection_timeout'), headers=headers)
 
     def __get(self, url, params=None):
         headers = {'User-Agent': config.USER_AGENT}
         return requests.get(
             url, params=params, auth=RequestsAuth(self.auth),
-            timeout=config.getDefault('connectionTimeout'), headers=headers)
+            timeout=config.get_default('connection_timeout'), headers=headers)
 
 
 def _entry(bucket, key):
-    return base64Encode('{0}:{1}'.format(bucket, key))
+    return urlsafe_base64_encode('{0}:{1}'.format(bucket, key))
