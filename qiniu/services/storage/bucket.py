@@ -81,21 +81,21 @@ class Bucket(object):
         r = self.__post(url, params)
         return _ret(r)
 
-    def move(self, keyPairs, targetBucket=None):
+    def move(self, key_pairs, target_bucket=None):
         ops = []
         url = 'http://{0}/batch'.format(config.RS_HOST)
-        for k, v in keyPairs.items():
-            to = _entry(v, targetBucket) if targetBucket else self.__entry(v)
+        for k, v in key_pairs.items():
+            to = _entry(v, target_bucket) if target_bucket else self.__entry(v)
             ops.append("/move/{0}/{1}".format(self.__entry(k), to))
 
         r = self.__post(url, dict(op=ops))
         return _ret(r)
 
-    def copy(self, keyPairs, targetBucket=None):
+    def copy(self, key_pairs, target_bucket=None):
         ops = []
         url = 'http://{0}/batch'.format(config.RS_HOST)
-        for k, v in keyPairs.items():
-            to = _entry(v, targetBucket) if targetBucket else self.__entry(v)
+        for k, v in key_pairs.items():
+            to = _entry(v, target_bucket) if target_bucket else self.__entry(v)
             ops.append("/copy/{0}/{1}".format(self.__entry(k), to))
 
         r = self.__post(url, dict(op=ops))
