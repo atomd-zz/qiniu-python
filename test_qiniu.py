@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
 # flake8: noqa
 import os
-
 import string
 import random
+import tempfile
 
 import unittest
 import pytest
 
 from qiniu import Bucket, DeprecatedApi, QiniuServiceException, Auth, put, putfile, resumable_put, resumable_putfile, set_default, etag
 
-from qiniu.compat import is_py2
+from qiniu.compat import is_py2, b
 
 from qiniu.services.storage.uploader import _put
 
@@ -30,9 +30,25 @@ dummysecret_key = '1234567890'
 dummyMac = Auth(dummyaccess_key, dummysecret_key)
 
 
-def randString(length):
+def rand_string(length):
     lib = string.ascii_uppercase
     return ''.join([random.choice(lib) for i in range(0, length)])
+
+
+def create_temp_file(size):
+    t = tempfile.mktemp()
+    f = open(t, 'wb')
+    f.seek(size-1)
+    f.write(b('0'))
+    f.close()
+    return t
+
+
+def remove_temp_file(file):
+    try:
+        os.remove(file)
+    except OSError:
+        pass
 
 
 class AuthTestCase(unittest.TestCase):
@@ -99,7 +115,7 @@ class BucketTestCase(unittest.TestCase):
         assert 612 == ret[0]['code'] and ret[0]['data']['error'] == 'no such file or directory'
 
     def test_move(self):
-        key = 'copyto'+randString(8)
+        key = 'copyto'+rand_string(8)
         self.bucket.copy({'copyfrom': key})
         ret = self.bucket.move({key: key + 'move'})
         assert ret[0]['code'] == 200
@@ -107,7 +123,7 @@ class BucketTestCase(unittest.TestCase):
         assert ret == {}
 
     def test_copy(self):
-        key = 'copyto'+randString(8)
+        key = 'copyto'+rand_string(8)
         ret = self.bucket.copy({'copyfrom': key})
         assert ret[0]['code'] == 200
         ret = self.bucket.delete(key)
@@ -186,6 +202,14 @@ class ResumableUploaderTestCase(unittest.TestCase):
         token = self.q.upload_token(bucket_name, key)
         ret = resumable_putfile(token, key, localfile, self.params, self.mime_type)
         assert ret['key'] == key
+
+    def test_big_file(self):
+        key = 'big'
+        token = self.q.upload_token(bucket_name, key)
+        localfile = create_temp_file(4 * 1024 * 1024 + 1)
+        ret = resumable_putfile(token, key, localfile, self.params, self.mime_type)
+        assert ret['key'] == key
+        remove_temp_file(localfile)
 
     def test_retry(self):
         localfile = __file__
