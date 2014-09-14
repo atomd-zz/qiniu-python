@@ -126,7 +126,6 @@ class _Resume(object):
 
     def make_block(self, block, block_size):
         crc = crc32(block)
-        block = bytearray(block)
         url = self.block_url(config.get_default('default_up_host'), block_size)
 
         r = None
