@@ -93,35 +93,39 @@ def _put(up_token, key, data, params, mime_type, crc32, is_file=False):
     return _ret(r)
 
 
-def resumable_put(up_token, key, input_stream, data_size, params=None, mime_type=None):
-    task = _Resume(up_token, key, input_stream, data_size, params, mime_type)
+def resumable_put(up_token, key, input_stream, data_size, params=None, mime_type=None, notify=None):
+    task = _Resume(up_token, key, input_stream, data_size, params, mime_type, notify)
     return task.upload()
 
 
-def resumable_putfile(up_token, key, file_path, params=None, mime_type=None):
+def resumable_putfile(up_token, key, file_path, params=None, mime_type=None, notify=None):
     ret = {}
     size = os.stat(file_path).st_size
     with open(file_path, 'rb') as input_stream:
-        ret = resumable_put(up_token, key, input_stream, size, params, mime_type)
+        ret = resumable_put(up_token, key, input_stream, size, params, mime_type, notify)
     return ret
 
 
 class _Resume(object):
 
-    def __init__(self, up_token, key, input_stream, data_size, params, mime_type):
+    def __init__(self, up_token, key, input_stream, data_size, params, mime_type, notify):
         self.up_token = up_token
         self.key = key
         self.input_stream = input_stream
         self.size = data_size
         self.params = params
         self.mime_type = mime_type
+        self.notify = notify
 
     def upload(self):
         self.blockStatus = []
 
         for block in _file_iter(self.input_stream, config._BLOCK_SIZE):
-            ret = self.make_block(block, len(block))
+            length = len(block)
+            ret = self.make_block(block, length)
             self.blockStatus.append(ret)
+            if(callable(self.notify)):
+                self.notify(((len(self.blockStatus) - 1) * config._BLOCK_SIZE)+length, self.size)
         return self.make_file()
 
     def make_block(self, block, block_size):

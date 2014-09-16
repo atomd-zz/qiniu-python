@@ -207,7 +207,9 @@ class ResumableUploaderTestCase(unittest.TestCase):
         key = 'big'
         token = self.q.upload_token(bucket_name, key)
         localfile = create_temp_file(4 * 1024 * 1024 + 1)
-        ret = resumable_putfile(token, key, localfile, self.params, self.mime_type)
+        notify = lambda progress, total: progress
+
+        ret = resumable_putfile(token, key, localfile, self.params, self.mime_type, notify=notify)
         assert ret['key'] == key
         remove_temp_file(localfile)
 
