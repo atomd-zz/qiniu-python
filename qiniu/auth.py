@@ -114,6 +114,11 @@ class Auth(object):
         data = json.dumps(args, separators=(',', ':'))
         return self.token_with_data(data)
 
+    def verify_callback(self, origin_authorization, url, body):
+        token = self.token_of_request(url, body, 'application/x-www-form-urlencoded')
+        authorization = 'QBox {0}'.format(token)
+        return origin_authorization == authorization
+
     @staticmethod
     def __copy_policy(policy, to, strict_policy):
         for k, v in policy.items():
