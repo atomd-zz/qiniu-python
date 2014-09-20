@@ -111,7 +111,10 @@ class Auth(object):
         if policy is not None:
             self.__copy_policy(policy, args, strict_policy)
 
-        data = json.dumps(args, separators=(',', ':'))
+        return self.__upload_token(args)
+
+    def __upload_token(self, policy):
+        data = json.dumps(policy, separators=(',', ':'))
         return self.token_with_data(data)
 
     def verify_callback(self, origin_authorization, url, body):

@@ -5,7 +5,7 @@ import requests
 from qiniu import config
 from qiniu.auth import RequestsAuth
 
-from qiniu.utils import urlsafe_base64_encode, _ret
+from qiniu.utils import urlsafe_base64_encode, _ret, entry
 
 
 class Bucket(object):
@@ -85,7 +85,7 @@ class Bucket(object):
         ops = []
         url = 'http://{0}/batch'.format(config.RS_HOST)
         for k, v in key_pairs.items():
-            to = _entry(v, target_bucket) if target_bucket else self.__entry(v)
+            to = entry(v, target_bucket) if target_bucket else self.__entry(v)
             ops.append("/move/{0}/{1}".format(self.__entry(k), to))
 
         r = self.__post(url, dict(op=ops))
@@ -95,7 +95,7 @@ class Bucket(object):
         ops = []
         url = 'http://{0}/batch'.format(config.RS_HOST)
         for k, v in key_pairs.items():
-            to = _entry(v, target_bucket) if target_bucket else self.__entry(v)
+            to = entry(v, target_bucket) if target_bucket else self.__entry(v)
             ops.append("/copy/{0}/{1}".format(self.__entry(k), to))
 
         r = self.__post(url, dict(op=ops))
@@ -120,7 +120,7 @@ class Bucket(object):
         return _ret(r)
 
     def __entry(self, key):
-        return _entry(self.bucket, key)
+        return entry(self.bucket, key)
 
     def __post(self, url, data=None):
         headers = {'User-Agent': config.USER_AGENT}
@@ -133,7 +133,3 @@ class Bucket(object):
         return requests.get(
             url, params=params, auth=RequestsAuth(self.auth),
             timeout=config.get_default('connection_timeout'), headers=headers)
-
-
-def _entry(bucket, key):
-    return urlsafe_base64_encode('{0}:{1}'.format(bucket, key))

@@ -70,3 +70,7 @@ def _etag(input_stream):
 def etag(filePath):
     with open(filePath, 'rb') as f:
         return _etag(f)
+
+
+def entry(bucket, key):
+    return urlsafe_base64_encode('{0}:{1}'.format(bucket, key))
