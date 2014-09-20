@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from hashlib import sha1
-from base64 import urlsafe_b64encode
+from base64 import urlsafe_b64encode, urlsafe_b64decode
 
 from .config import _BLOCK_SIZE
 
@@ -20,6 +20,11 @@ from .exceptions import QiniuServiceException
 def urlsafe_base64_encode(data):
     ret = urlsafe_b64encode(b(data))
     return s(ret)
+
+
+def urlsafe_base64_decode(data):
+    ret = urlsafe_b64decode(s(data))
+    return b(ret)
 
 
 def file_crc32(filePath):

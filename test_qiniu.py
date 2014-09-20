@@ -8,7 +8,9 @@ import tempfile
 import unittest
 import pytest
 
-from qiniu import Bucket, DeprecatedApi, QiniuServiceException, Auth, put, putfile, resumable_put, resumable_putfile, set_default, etag
+from qiniu import DeprecatedApi, QiniuServiceException, Auth, set_default, etag
+from qiniu import Bucket, put, putfile, resumable_put, resumable_putfile
+from qiniu import urlsafe_base64_encode, urlsafe_base64_decode
 
 from qiniu.compat import is_py2, b
 
@@ -49,6 +51,14 @@ def remove_temp_file(file):
         os.remove(file)
     except OSError:
         pass
+
+
+class UtilsTest(unittest.TestCase):
+
+    def test_urlsafe(self):
+        a = '你好\x96'
+        u = urlsafe_base64_encode(a)
+        assert a == urlsafe_base64_decode(u)
 
 
 class AuthTestCase(unittest.TestCase):
