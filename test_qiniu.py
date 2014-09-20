@@ -27,9 +27,9 @@ access_key = os.getenv('QINIU_ACCESS_KEY')
 secret_key = os.getenv('QINIU_SECRET_KEY')
 bucket_name = os.getenv('QINIU_TEST_BUCKET')
 
-dummyaccess_key = 'abcdefghklmnopq'
-dummysecret_key = '1234567890'
-dummyMac = Auth(dummyaccess_key, dummysecret_key)
+dummy_access_key = 'abcdefghklmnopq'
+dummy_secret_key = '1234567890'
+dummy_auth = Auth(dummy_access_key, dummy_secret_key)
 
 
 def rand_string(length):
@@ -64,11 +64,11 @@ class UtilsTest(unittest.TestCase):
 class AuthTestCase(unittest.TestCase):
 
     def test_token(self):
-        token = dummyMac.token('test')
+        token = dummy_auth.token('test')
         assert token == 'abcdefghklmnopq:mSNBTR7uS2crJsyFr2Amwv1LaYg='
 
     def test_token_with_data(self):
-        token = dummyMac.token_with_data('test')
+        token = dummy_auth.token_with_data('test')
         assert token == 'abcdefghklmnopq:-jP8eEV9v48MkYiBGs81aDxl60E=:dGVzdA=='
 
     def test_noKey(self):
@@ -78,14 +78,14 @@ class AuthTestCase(unittest.TestCase):
             Auth('', '').token('nokey')
 
     def test_token_of_request(self):
-        token = dummyMac.token_of_request('http://www.qiniu.com?go=1', 'test', '')
+        token = dummy_auth.token_of_request('http://www.qiniu.com?go=1', 'test', '')
         assert token == 'abcdefghklmnopq:cFyRVoWrE3IugPIMP5YJFTO-O-Y='
-        token = dummyMac.token_of_request('http://www.qiniu.com?go=1', 'test', 'application/x-www-form-urlencoded')
+        token = dummy_auth.token_of_request('http://www.qiniu.com?go=1', 'test', 'application/x-www-form-urlencoded')
         assert token == 'abcdefghklmnopq:svWRNcacOE-YMsc70nuIYdaa1e4='
 
     def test_deprecatedPolicy(self):
         with pytest.raises(DeprecatedApi):
-            dummyMac.upload_token('1', None, policy={'asyncOps': 1})
+            dummy_auth.upload_token('1', None, policy={'asyncOps': 1})
 
 
 class BucketTestCase(unittest.TestCase):
