@@ -24,7 +24,7 @@ def urlsafe_base64_encode(data):
 
 def urlsafe_base64_decode(data):
     ret = urlsafe_b64decode(s(data))
-    return b(ret)
+    return ret
 
 
 def file_crc32(filePath):
