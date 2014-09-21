@@ -58,7 +58,7 @@ class UtilsTest(unittest.TestCase):
     def test_urlsafe(self):
         a = '你好\x96'
         u = urlsafe_base64_encode(a)
-        assert a == urlsafe_base64_decode(u)
+        assert b(a) == urlsafe_base64_decode(u)
 
 
 class AuthTestCase(unittest.TestCase):
