@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import re
+from os.path import join, dirname
+
 try:
     import setuptools
     setup = setuptools.setup
@@ -8,10 +11,12 @@ except ImportError:
     setuptools = None
     from distutils.core import setup
 
+with open(join(dirname(__file__), 'qiniu', '__init__.py'), 'r') as f:
+    version = re.match(r".*__version__ = '(.*?)'", f.read(), re.S).group(1)
 
 setup(
     name='qiniu',
-    version=__import__('qiniu').__version__,
+    version=version,
     description='Qiniu Resource Storage SDK',
     long_description='see:\nhttps://github.com/qiniu/python-sdk\n',
     author='Shanghai Qiniu Information Technologies Co., Ltd.',
